@@ -1,0 +1,150 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using FribergCarRentalsAB.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] – Fribergs Bilar</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="~/images/FribergsBilar.png" type="image/png" />
+
+    <!-- Bootstrap & site CSS -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    @RenderSection("HeadContent", required: false)
+</head>
+<body class="d-flex flex-column min-vh-100" style="background: var(--bg-page);">
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark" style="background: var(--brand-dark);">
+            <div class="container-fluid">
+                <!-- Logo -->
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <img src="~/images/FribergsBilar.png" alt="Fribergs Bilar" height="40" />
+                </a>
+
+                <button class="navbar-toggler" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#mainNav"
+                        aria-controls="mainNav" aria-expanded="false"
+                        aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="mainNav">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Hem</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Car" asp-action="Index">Bilar</a>
+                        </li>
+
+                        @* Only show rentals if the user is signed in *@
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Rental" asp-action="Index">
+                                    Mina Bokningar
+                                </a>
+                            </li>
+                        }
+
+                        @* Admin dropdown only for Admins *@
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="adminMenu"
+                                   role="button" data-bs-toggle="dropdown"
+                                   aria-expanded="false">
+                                    Admin
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="adminMenu">
+                                    <li>
+                                        <a class="dropdown-item" asp-area="Admin"
+                                           asp-controller="CarAdmin" asp-action="Index">
+                                            Hantera bilar
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-area="Admin"
+                                           asp-controller="RentalAdmin" asp-action="Index">
+                                            Hantera bokningar
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-area="Admin"
+                                           asp-controller="UsersAdmin" asp-action="Index">
+                                            Hantera användare
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                    </ul>
+
+                    <!-- Login / Profile -->
+                    <ul class="navbar-nav">
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="userMenu"
+                                   role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    @User.Identity.Name
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                                    <li>
+                                        <a class="dropdown-item" asp-area="Identity"
+                                           asp-page="/Account/Manage/Index">
+                                            Profil
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li>
+                                        <form asp-area="Identity" asp-page="/Account/Logout"
+                                              method="post" class="d-inline">
+                                            <button type="submit" class="dropdown-item">
+                                                Logga ut
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">
+                                    Registrera
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">
+                                    Logga in
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="flex-grow-1 container py-4">
+        @RenderBody()
+    </main>
+
+    <footer class="mt-auto py-3 text-center" style="background: var(--brand-dark);">
+        <div class="text-inverse">
+            &copy; @DateTime.Now.Year Fribergs Bilar AB
+        </div>
+    </footer>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

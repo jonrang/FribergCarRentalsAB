@@ -1,0 +1,70 @@
+﻿@model EditUserViewModel
+@using Microsoft.AspNetCore.Mvc.Rendering
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Redigera användare";
+}
+
+<div class="container py-4">
+    <h1 class="h3 mb-3">@ViewData["Title"]</h1>
+
+    <form asp-area="Admin"
+          asp-controller="UsersAdmin"
+          asp-action="Edit"
+          method="post"
+          class="row g-3 needs-validation"
+          novalidate>
+
+        <input type="hidden" asp-for="Id" />
+
+        <div asp-validation-summary="All" class="alert alert-danger"></div>
+
+        <div class="col-md-6">
+            <label asp-for="Email" class="form-label">E-post</label>
+            <input asp-for="Email" class="form-control" readonly />
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="FullName" class="form-label">Fullständigt namn</label>
+            <input asp-for="FullName" class="form-control" />
+            <span asp-validation-for="FullName" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="SelectedRoles" class="form-label">
+                Roller
+            </label>
+            <select asp-for="SelectedRoles"
+                    class="form-select"
+                    asp-items="new MultiSelectList(Model.AllRoles, Model.SelectedRoles)"
+                    multiple size="Model.AllRoles.Count">
+            </select>
+            <span asp-validation-for="SelectedRoles" class="text-danger"></span>
+        </div>
+
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Spara</button>
+            <a asp-area="Admin"
+               asp-controller="UsersAdmin"
+               asp-action="Index"
+               class="btn btn-secondary ms-2">Avbryt</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+          'use strict';
+          document.querySelectorAll('.needs-validation')
+            .forEach(form => form.addEventListener('submit', e => {
+              if (!form.checkValidity()) {
+                e.preventDefault()
+                e.stopPropagation()
+              }
+              form.classList.add('was-validated')
+            }))
+        })();
+    </script>
+}

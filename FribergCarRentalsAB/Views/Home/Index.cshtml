@@ -1,0 +1,80 @@
+﻿@using System.Linq
+@model FribergCarRentalsAB.Models.HomeIndexViewModel
+
+@{
+	ViewData["Title"] = "Welcome";
+}
+<div class="hero">
+	<div class="text-center py-5" style="background: var(--bg-page);">
+		<img src="~/images/FribergsBilar.png"
+			 alt="Fribergs Bilar Logo"
+			 style="max-width: 300px; width: 100%; height: auto;" />
+
+		<h1 class="display-4 mt-4" style="color: var(--brand-dark);">
+			Välkommen till Fribergs Bilar
+		</h1>
+		<p class="lead" style="color: var(--brand-primary);">
+			Din moderna biluthyrning med personligt bemötande och stil.
+		</p>
+
+		<a class="btn btn-primary btn-lg mt-3"
+		   asp-controller="Car"
+		   asp-action="Index">
+			Se våra bilar
+		</a>
+	</div>
+</div>
+@inject SignInManager<ApplicationUser> SignInManager
+
+@if (SignInManager.IsSignedIn(User) &&
+     User.IsInRole("Admin"))
+{
+    <div class="text-center my-5">
+        <form asp-action="SeedCars" method="post">
+            <button type="submit"
+                    class="btn btn-lg btn-warning shadow-lg">
+                <i class="bi bi-bucket-fill me-1"></i>
+                Populera med exempel‐bilar
+            </button>
+        </form>
+        @if (TempData["Success"] is string msg)
+        {
+            <div class="alert alert-info mt-3">@msg</div>
+        }
+    </div>
+}
+
+<h2 class="text-center mb-4">Upptäck våra bilar</h2>
+
+@if (!Model.CarImages.Any())
+{
+    <p class="text-center text-muted">
+        Inga bilder att visa.
+    </p>
+}
+else
+{
+    <div id="carCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            @for (int i = 0; i < Model.CarImages.Count; i++)
+            {
+                var file = Model.CarImages[i];
+                <div class="carousel-item @(i == 0 ? "active" : "")">
+                    <img src="~/images/cars/@file"
+                         class="d-block w-100"
+                         style="height: 400px; object-fit: cover;"
+                         alt="Bilbild @i" />
+                </div>
+            }
+        </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#carCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+            <span class="visually-hidden">Föregående</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+            <span class="visually-hidden">Nästa</span>
+        </button>
+    </div>
+}

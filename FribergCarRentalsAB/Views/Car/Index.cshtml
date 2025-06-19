@@ -1,0 +1,82 @@
+﻿@model IEnumerable<FribergCarRentalsAB.Models.Car>
+@using FribergCarRentalsAB.Models
+@inject SignInManager<ApplicationUser> SignInManager
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Tillgängliga bilar";
+}
+
+<h2 class="text-center mb-4">@ViewData["Title"]</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info text-center">
+        Inga bilar är för närvarande tillgängliga.
+    </div>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @foreach (var car in Model)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <img src="~/images/cars/@car.ImageFileName"
+                         class="card-img-top"
+                         alt="@($"{car.Make} {car.Model}")"
+                         style="object-fit: cover; height: 200px;" />
+
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            @car.Make @car.Model (@car.Year)
+                        </h5>
+                        <p class="card-text mb-1">
+                            <strong>Reg. nr:</strong> @car.LicensePlate<br />
+                            <strong>Miltal:</strong> @car.Mileage km<br />
+                            <strong>Pris/dag:</strong>
+                            <strong>@car.RatePerDay.ToString("C")</strong>
+                        </p>
+                    </div>
+
+                    <div class="card-footer bg-transparent border-0">
+                        @if (car.IsAvailable)
+                        {
+                            @if (SignInManager.IsSignedIn(User))
+                            {
+                                <!-- Logged in: go to Create booking -->
+                                <a asp-area=""
+                                   asp-controller="Rental"
+                                   asp-action="Create"
+                                   asp-route-carId="@car.Id"
+                                   class="btn btn-primary w-100">
+                                    Boka bil
+                                </a>
+                            }
+                            else
+                            {
+                                
+                                    var returnUrl = Url.Action(
+                                        "Create", "Rental",
+                                        new { carId = car.Id });
+                                
+                                <a asp-area="Identity"
+                                   asp-page="/Account/Login"
+                                   asp-route-returnUrl="@returnUrl"
+                                   class="btn btn-outline-primary w-100">
+                                    Logga in för att boka
+                                </a>
+                            }
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary w-100 py-2">
+                                Inte tillgänglig
+                            </span>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

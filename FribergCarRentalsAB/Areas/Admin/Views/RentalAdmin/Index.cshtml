@@ -1,0 +1,120 @@
+﻿@model IEnumerable<FribergCarRentalsAB.Models.Rental>
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Hantera bokningar";
+}
+
+@section HeadContent {
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3">@ViewData["Title"]</h1>
+    </div>
+
+    @if (TempData["Success"] is string msg)
+    {
+        <div class="alert alert-success">@msg</div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-striped table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Bil</th>
+                        <th>Kund</th>
+                        <th>Från</th>
+                        <th>Till</th>
+                        <th>Status</th>
+                        <th>Totalkostnad</th>
+                        <th style="width: 180px">Åtgärder</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model)
+                    {
+                        <tr>
+                            <td>@r.Id</td>
+                            <td>
+                                <img src="~/images/cars/@r.Car.ImageFileName"
+                                     class="img-thumbnail me-2"
+                                     style="height:40px; width: auto;"
+                                     alt="@($"{r.Car.Make} {r.Car.Model}")" />
+                                @r.Car.Make @r.Car.Model (@r.Car.Year)
+                            </td>
+                            <td>
+                                @r.User.UserName<br />
+                                <small class="text-muted">@r.User.Email</small>
+                            </td>
+                            <td>@r.StartDate.ToString("d")</td>
+                            <td>@r.EndDate.ToString("d")</td>
+                            <td>
+                                <span class="badge @(r.Status == RentalStatus.Pending ? "bg-warning text-dark" : 
+                            r.Status == RentalStatus.Active ? "bg-success" :  "bg-secondary")">
+                                @r.Status
+                            </span>
+                        </td>
+                        <td>@r.TotalCost.ToString("C")</td>
+                        <td>
+                            <div class="d-grid gap-1">
+                                @* Cancel if still pending *@
+                                @if (r.Status == RentalStatus.Pending)
+                                    {
+                                        <form asp-area="Admin"
+                                              asp-controller="RentalAdmin"
+                                              asp-action="Cancel"
+                                              method="post">
+                                            <input type="hidden" name="id" value="@r.Id" />
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-warning">
+                                                <i class="bi bi-x-circle me-1"></i> Avboka
+                                            </button>
+                                        </form>
+                                    }
+                                    @* Return if active *@
+                                    @if (r.Status == RentalStatus.Active)
+                                    {
+                                        <form asp-area="Admin"
+                                              asp-controller="RentalAdmin"
+                                              asp-action="Return"
+                                              method="post">
+                                            <input type="hidden" name="id" value="@r.Id" />
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-box-arrow-in-left me-1"></i> Återlämna
+                                            </button>
+                                        </form>
+                                    }
+                                    @* Delete always available *@
+                                    <form asp-area="Admin"
+                                          asp-controller="RentalAdmin"
+                                          asp-action="Delete"
+                                          method="post"
+                                          onsubmit="return confirm('Ta bort bokning?');">
+                                        <input type="hidden" name="id" value="@r.Id" />
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash me-1"></i> Ta bort
+                                        </button>
+                                    </form>
+                                    @* Details link *@
+                                    <a asp-area="Admin"
+                                       asp-controller="RentalAdmin"
+                                       asp-action="Details"
+                                       asp-route-id="@r.Id"
+                                       class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-info-circle me-1"></i> Detaljer
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

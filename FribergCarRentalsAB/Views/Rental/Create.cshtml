@@ -1,0 +1,87 @@
+﻿@model FribergCarRentalsAB.Models.RentalInputModel
+
+@{
+    ViewData["Title"] = "Boka en Bil";
+    // For the min‐date attributes
+    var today = DateTime.Today.ToString("yyyy-MM-dd");
+    var tomorrow = DateTime.Today.AddDays(1).ToString("yyyy-MM-dd");
+}
+
+<h2 class="mb-4 text-center">@ViewData["Title"]</h2>
+
+<form asp-action="Create" class="needs-validation" novalidate>
+    <div class="row g-3">
+        <!-- Car selector -->
+        <div class="col-md-6">
+            <div class="form-floating">
+                <select asp-for="CarId"
+                        class="form-select"
+                        asp-items="(SelectList)ViewBag.Cars"
+                        required>
+                    <option value="">Välj bil…</option>
+                </select>
+                <label asp-for="CarId">Bil</label>
+                <div class="invalid-feedback">
+                    Du måste välja en bil.
+                </div>
+            </div>
+        </div>
+
+        <!-- Start date -->
+        <div class="col-md-3">
+            <div class="form-floating">
+                <input asp-for="StartDate"
+                       type="date"
+                       class="form-control"
+                       min="@today"
+                       required />
+                <label asp-for="StartDate">Startdatum</label>
+                <div class="invalid-feedback">
+                    Vänligen ange ett giltigt startdatum.
+                </div>
+            </div>
+        </div>
+
+        <!-- End date -->
+        <div class="col-md-3">
+            <div class="form-floating">
+                <input asp-for="EndDate"
+                       type="date"
+                       class="form-control"
+                       min="@tomorrow"
+                       required />
+                <label asp-for="EndDate">Slutdatum</label>
+                <div class="invalid-feedback">
+                    Slutdatum måste vara efter startdatum.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <button type="submit" class="btn btn-lg btn-primary">
+            Bekräfta bokning
+        </button>
+    </div>
+</form>
+
+@section Scripts {
+    <!-- Validation scripts + Bootstrap custom validation -->
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Bootstrap custom client-side validation
+        (() => {
+          'use strict';
+          const forms = document.querySelectorAll('.needs-validation');
+          Array.from(forms).forEach(form => {
+            form.addEventListener('submit', ev => {
+              if (!form.checkValidity()) {
+                ev.preventDefault();
+                ev.stopPropagation();
+              }
+              form.classList.add('was-validated');
+            }, false);
+          });
+        })();
+    </script>
+}

@@ -1,0 +1,87 @@
+﻿@model FribergCarRentalsAB.Models.Rental
+@using FribergCarRentalsAB.Models
+@{
+    ViewData["Title"] = "Bokningsdetaljer";
+    var now = DateTime.Today;
+    var isFuture = Model.StartDate.Date > now;
+    var isActive = Model.Status == RentalStatus.Active;
+    var statusClass = Model.Status switch
+    {
+        RentalStatus.Pending => "warning",
+        RentalStatus.Active => "success",
+        RentalStatus.Completed => "secondary",
+        _ => "secondary"
+    };
+    var days = (Model.EndDate.Date - Model.StartDate.Date).Days;
+}
+
+<div class="container py-4">
+    <div class="card shadow-sm">
+        <img src="~/images/cars/@Model.Car.ImageFileName"
+             class="card-img-top"
+             alt="@Model.Car.Make @Model.Car.Model"
+             style="object-fit:cover; height:300px;" />
+
+        <div class="card-body">
+            <h3 class="card-title mb-3">
+                @Model.Car.Make @Model.Car.Model (@Model.Car.Year)
+            </h3>
+
+            <dl class="row mb-2">
+                <dt class="col-sm-4">Registrerings­nummer</dt>
+                <dd class="col-sm-8">@Model.Car.LicensePlate</dd>
+
+                <dt class="col-sm-4">Mil</dt>
+                <dd class="col-sm-8">@Model.Car.Mileage km</dd>
+
+                <dt class="col-sm-4">Från</dt>
+                <dd class="col-sm-8">@Model.StartDate.ToString("d")</dd>
+
+                <dt class="col-sm-4">Till</dt>
+                <dd class="col-sm-8">@Model.EndDate.ToString("d")</dd>
+
+                <dt class="col-sm-4">Antal dagar</dt>
+                <dd class="col-sm-8">@days dag(ar)</dd>
+
+                <dt class="col-sm-4">Pris per dag</dt>
+                <dd class="col-sm-8">@Model.Car.RatePerDay.ToString("C")</dd>
+
+                <dt class="col-sm-4">Totalkostnad</dt>
+                <dd class="col-sm-8">
+                    <strong>@Model.TotalCost.ToString("C")</strong>
+                </dd>
+            </dl>
+
+            <div class="mb-3">
+                <span class="badge bg-@statusClass fs-6">
+                    @Model.Status
+                </span>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    ← Tillbaka
+                </a>
+
+                @if (isFuture && Model.Status == RentalStatus.Pending)
+                {
+                    <form asp-action="Cancel" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-warning">
+                            Avboka
+                        </button>
+                    </form>
+                }
+                else if (isActive)
+                {
+                    <form asp-action="Return" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-primary">
+                            Återlämna
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+</div>

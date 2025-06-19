@@ -1,0 +1,99 @@
+﻿@model FribergCarRentalsAB.Models.RentalIndexViewModel
+@using FribergCarRentalsAB.Models
+@inject SignInManager<ApplicationUser> SignInManager
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Mina Bokningar";
+}
+
+<h2 class="text-center mb-4">@ViewData["Title"]</h2>
+
+@if (!Model.Current.Any() && !Model.History.Any())
+{
+    <div class="alert alert-info text-center">
+        Du har inga bokningar.
+    </div>
+}
+else
+{
+    <!-- Aktiva/Väntande -->
+    @if (Model.Current.Any())
+    {
+        <h3 class="mt-4">Aktiva och Väntande bokningar</h3>
+        <div class="row row-cols-1 row-cols-md-2 g-4 mb-5">
+            @foreach (var r in Model.Current)
+            {
+                <!-- reuse your card markup from before -->
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <img src="~/images/cars/@r.Car.ImageFileName"
+                             class="card-img-top"
+                             style="height:180px; object-fit:cover;"
+                             alt="@($"{r.Car.Make} {r.Car.Model}")" />
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@r.Car.Make @r.Car.Model</h5>
+                            <p class="mb-1">
+                                <strong>Från:</strong> @($"{r.StartDate:d}")<br />
+                                <strong>Till:</strong> @($"{r.EndDate:d}")
+                            </p>
+                            <span class="badge @(r.Status == RentalStatus.Active ? "bg-success" : "bg-warning text-dark")">
+                                @r.Status
+                            </span>
+                            <div class="mt-auto">
+                                @* Pending cancel, Active return *@
+                                @if (r.Status == RentalStatus.Pending)
+                                {
+                                    <form asp-action="Cancel" method="post" class="d-inline w-100">
+                                        <input type="hidden" name="id" value="@r.Id" />
+                                        <button class="btn btn-warning w-100">Avboka</button>
+                                    </form>
+                                }
+                                else if (r.Status == RentalStatus.Active)
+                                {
+                                    <form asp-action="Return" method="post" class="d-inline w-100">
+                                        <input type="hidden" name="id" value="@r.Id" />
+                                        <button class="btn btn-primary w-100">Återlämna</button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Tidigare -->
+    @if (Model.History.Any())
+    {
+        <h3>Tidigare bokningar</h3>
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            @foreach (var r in Model.History)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <img src="~/images/cars/@r.Car.ImageFileName"
+                             class="card-img-top"
+                             style="height:180px; object-fit:cover;"
+                             alt="@($"{r.Car.Make} {r.Car.Model}")" />
+                        <div class="card-body">
+                            <h5 class="card-title">@r.Car.Make @r.Car.Model</h5>
+                            <p class="mb-1">
+                                <strong>Från:</strong> @($"{r.StartDate:d}")<br />
+                                <strong>Till:</strong> @($"{r.EndDate:d}")
+                            </p>
+                            <p>
+                                <span class="badge @(r.Status == RentalStatus.Completed ? "bg-success" : "bg-secondary")">
+                                    @r.Status
+                                </span>
+                                <br />
+                                <strong>Totalkostnad:</strong> @($"{r.TotalCost:C}")
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+}

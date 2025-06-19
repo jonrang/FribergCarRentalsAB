@@ -1,0 +1,132 @@
+[
+    {
+        "Make": "Volvo",
+        "Model": "V60",
+        "Year": 2020,
+        "LicensePlate": "ABC-100",
+        "RatePerDay": 750,
+        "Mileage": 45000,
+        "ImageFileName": "Black Car.jpg",
+        "IsAvailable": true
+    },
+    {
+        "Make": "Saab",
+        "Model": "9-3",
+        "Year": 2015,
+        "LicensePlate": "DEF-234",
+        "RatePerDay": 550,
+        "Mileage": 95000,
+        "ImageFileName": "Blue Car.jpg",
+        "IsAvailable": true
+    },
+    {
+        "Make": "BMW",
+        "Model": "3 Series",
+        "Year": 2018,
+        "LicensePlate": "GHI-345",
+        "RatePerDay": 900,
+        "Mileage": 60000,
+        "ImageFileName": "Fancy Car.jpg",
+        "IsAvailable": true
+    },
+    {
+        "Make": "Audi",
+        "Model": "A4",
+        "Year": 2019,
+        "LicensePlate": "JKL-456",
+        "RatePerDay": 850,
+        "Mileage": 72000,
+        "ImageFileName": "Fast looking Car.jpg",
+        "IsAvailable": true
+    },
+    {
+        "Make": "Mercedes-Benz",
+        "Model": "C-Class",
+        "Year": 2021,
+        "LicensePlate": "MNO-567",
+        "RatePerDay": 1100,
+        "Mileage": 30000,
+        "ImageFileName": "Green Car.jpg",
+        "IsAvailable": true
+    },
+    {
+        "Make": "Toyota",
+        "Model": "Camry",
+        "Year": 2017,
+        "LicensePlate": "PQR-678",
+        "RatePerDay": 650,
+        "Mileage": 80000,
+        "ImageFileName": "Older Car.jpg",
+        "IsAvailable": true
+    },
+    {
+        "Make": "Honda",
+        "Model": "Accord",
+        "Year": 2016,
+        "LicensePlate": "STU-789",
+        "RatePerDay": 620,
+        "Mileage": 87000,
+        "ImageFileName": "Red Car.jpg",
+        "IsAvailable": true
+    },
+    {
+        "Make": "Ford",
+        "Model": "Focus",
+        "Year": 2014,
+        "LicensePlate": "VWX-890",
+        "RatePerDay": 480,
+        "Mileage": 105000,
+        "ImageFileName": "White Car.jpg",
+        "IsAvailable": true
+    },
+    {
+        "Make": "Nissan",
+        "Model": "Leaf",
+        "Year": 2022,
+        "LicensePlate": "YZA-901",
+        "RatePerDay": 790,
+        "Mileage": 25000,
+        "ImageFileName": "Black Car.jpg",
+        "IsAvailable": true
+    },
+    {
+        "Make": "Opel",
+        "Model": "Astra",
+        "Year": 2013,
+        "LicensePlate": "BCD-012",
+        "RatePerDay": 530,
+        "Mileage": 120000,
+        "ImageFileName": "Blue Car.jpg",
+        "IsAvailable": true
+    },
+    {
+        "Make": "Peugeot",
+        "Model": "308",
+        "Year": 2018,
+        "LicensePlate": "EFG-123",
+        "RatePerDay": 710,
+        "Mileage": 68000,
+        "ImageFileName": "Fancy Car.jpg",
+        "IsAvailable": true
+    },
+    {
+        "Make": "Skoda",
+        "Model": "Octavia",
+        "Year": 2019,
+        "LicensePlate": "HIJ-234",
+        "RatePerDay": 720,
+        "Mileage": 54000,
+        "ImageFileName": "Fast looking Car.jpg",
+        "IsAvailable": true
+    },
+    {
+        "Make": "Toyota",
+        "Model": "Corolla",
+        "Year": 2022,
+        "LicensePlate": "RVG-918",
+        "RatePerDay": 1800,
+        "Mileage": 38000,
+        "ImageFileName": "Red Car.jpg",
+        "IsAvailable": true
+    }
+]

@@ -1,0 +1,89 @@
+/* 1. Color variables */
+:root {
+    --color-ultra-violet: #52489C;
+    --color-true-blue: #4062BB;
+    --color-robin-egg: #59C3C3;
+    --color-antiflash-white: #EBEBEB;
+    --color-bright-pink: #F45B69;
+    --brand-primary: var(--color-true-blue);
+    --brand-dark: var(--color-ultra-violet);
+    --bg-page: var(--color-antiflash-white);
+    --text-light: var(--color-antiflash-white);
+    --text-dark: var(--color-ultra-violet);
+}
+
+/* 2. Base page styles */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Segoe UI", sans-serif;
+    background: var(--bg-page);
+    color: var(--text-dark);
+}
+
+a {
+    color: var(--brand-primary);
+}
+
+    a:hover {
+        color: var(--color-robin-egg);
+    }
+
+/* 3. Navbar overrides */
+.navbar-custom {
+    background: var(--brand-dark) !important;
+}
+
+    .navbar-custom .nav-link,
+    .navbar-custom .navbar-brand {
+        color: var(--text-light) !important;
+    }
+
+        .navbar-custom .nav-link:hover {
+            color: var(--color-robin-egg) !important;
+        }
+
+/* 4. Logo sizing */
+.navbar-brand img {
+    height: 40px;
+    width: auto;
+}
+
+/* 5. Footer */
+footer {
+    background: var(--brand-dark);
+    color: var(--text-light);
+}
+
+.hero {
+    background: linear-gradient(180deg, var(--bg-page), white);
+}
+
+.card-img-top {
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+}
+/*
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    margin-bottom: 60px;
+}
+*/

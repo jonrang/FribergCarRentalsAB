@@ -1,0 +1,105 @@
+﻿@model FribergCarRentalsAB.Models.Rental
+@using FribergCarRentalsAB.Models
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Bokningsdetaljer";
+    var isFuture = Model.Status == RentalStatus.Pending && Model.StartDate > DateTime.Today;
+    var isActive = Model.Status == RentalStatus.Active;
+    var days = (Model.EndDate.Date - Model.StartDate.Date).Days;
+}
+
+<div class="container-fluid py-4">
+    <h1 class="h3 mb-4">@ViewData["Title"]</h1>
+
+    @if (TempData["Success"] is string msg)
+    {
+        <div class="alert alert-success">@msg</div>
+    }
+
+    <div class="card shadow-sm mb-3">
+        <img src="~/images/cars/@Model.Car.ImageFileName"
+             class="card-img-top"
+             style="object-fit:cover; height:300px;"
+             alt="@($"{Model.Car.Make} {Model.Car.Model}")" />
+        <div class="card-body">
+            <h4 class="card-title">
+                @Model.Car.Make @Model.Car.Model (@Model.Car.Year)
+            </h4>
+
+            <dl class="row mb-3">
+                <dt class="col-sm-3">Boknings-ID</dt>
+                <dd class="col-sm-9">@Model.Id</dd>
+
+                <dt class="col-sm-3">Kund</dt>
+                <dd class="col-sm-9">
+                    @Model.User.UserName<br />
+                    <small class="text-muted">@Model.User.Email</small>
+                </dd>
+
+                <dt class="col-sm-3">Från</dt>
+                <dd class="col-sm-9">@Model.StartDate.ToString("d")</dd>
+
+                <dt class="col-sm-3">Till</dt>
+                <dd class="col-sm-9">@Model.EndDate.ToString("d")</dd>
+
+                <dt class="col-sm-3">Antal dagar</dt>
+                <dd class="col-sm-9">@days dag(ar)</dd>
+
+                <dt class="col-sm-3">Totalkostnad</dt>
+                <dd class="col-sm-9">@Model.TotalCost.ToString("C")</dd>
+
+                <dt class="col-sm-3">Status</dt>
+                <dd class="col-sm-9">
+                    <span class="badge @(Model.Status == RentalStatus.Pending ? "bg-warning text-dark" :
+                       Model.Status == RentalStatus.Active ? "bg-success" : "bg-secondary")">
+                        @Model.Status
+                    </span>
+                </dd>
+            </dl>
+
+            <div class="d-flex gap-2">
+                <a asp-area="Admin"
+                   asp-controller="RentalAdmin"
+                   asp-action="Index"
+                   class="btn btn-outline-secondary">
+                    ← Tillbaka
+                </a>
+
+                @if (isFuture)
+                {
+                    <form asp-area="Admin"
+                          asp-controller="RentalAdmin"
+                          asp-action="Cancel"
+                          method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-warning">
+                            Avboka
+                        </button>
+                    </form>
+                }
+                @if (isActive)
+                {
+                    <form asp-area="Admin"
+                          asp-controller="RentalAdmin"
+                          asp-action="Return"
+                          method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-primary">
+                            Återlämna
+                        </button>
+                    </form>
+                }
+                <form asp-area="Admin"
+                      asp-controller="RentalAdmin"
+                      asp-action="Delete"
+                      method="post"
+                      onsubmit="return confirm('Ta bort bokning?');">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" class="btn btn-danger">
+                        Ta bort
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

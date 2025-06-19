@@ -1,0 +1,65 @@
+﻿@model IEnumerable<UserAdminViewModel>
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Hantera användare";
+}
+@section HeadContent {
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+}
+
+<div class="container py-4">
+    <h1 class="h3 mb-3">@ViewData["Title"]</h1>
+
+    @if (TempData["Success"] is string msg)
+    {
+        <div class="alert alert-success">@msg</div>
+    }
+
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>E-post</th>
+                <th>Roller</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var u in Model)
+            {
+                <tr>
+                    <td>@u.Id</td>
+                    <td>@u.Email</td>
+                    <td>
+                        @foreach (var r in u.Roles)
+                        {
+                            <span class="badge bg-secondary me-1">@r</span>
+                        }
+                    </td>
+                    <td class="text-end">
+                        <a asp-area="Admin"
+                           asp-controller="UsersAdmin"
+                           asp-action="Edit"
+                           asp-route-id="@u.Id"
+                           class="btn btn-sm btn-outline-primary me-1">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form asp-area="Admin"
+                              asp-controller="UsersAdmin"
+                              asp-action="Delete"
+                              asp-route-id="@u.Id"
+                              method="post"
+                              class="d-inline"
+                              onsubmit="return confirm('Ta bort användare?');">
+                            <button type="submit"
+                                    class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
