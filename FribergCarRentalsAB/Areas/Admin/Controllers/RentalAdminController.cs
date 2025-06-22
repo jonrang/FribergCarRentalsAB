@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FribergCarRentalsAB.Data;
 using Microsoft.AspNetCore.Authorization;
-using FribergCarRentalsAB.Data;
+using Microsoft.AspNetCore.Mvc;
 
 
 namespace FribergCarRentalsAB.Areas.Admin.Controllers

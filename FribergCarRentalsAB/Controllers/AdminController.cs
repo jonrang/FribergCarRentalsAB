@@ -1,12 +1,6 @@
-﻿using System.Data;
-using System.Threading.Tasks;
-using FribergCarRentalsAB.Models;
-using Microsoft.AspNetCore.Authorization;
+﻿using FribergCarRentalsAB.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.General;
 
 namespace FribergCarRentalsAB.Controllers
 {
@@ -15,7 +9,7 @@ namespace FribergCarRentalsAB.Controllers
         private readonly UserManager<ApplicationUser> users;
         private readonly RoleManager<IdentityRole<int>> roles;
 
-        public AdminController(UserManager<ApplicationUser> users , RoleManager<IdentityRole<int>> roles)
+        public AdminController(UserManager<ApplicationUser> users, RoleManager<IdentityRole<int>> roles)
         {
             this.users = users;
             this.roles = roles;

@@ -20,7 +20,7 @@ namespace FribergCarRentalsAB.Data
         public async Task Delete(int id)
         {
             var rental = await applicationDb.Rentals.FindAsync(id);
-            if (rental!=null)
+            if (rental != null)
             {
                 applicationDb.Rentals.Remove(rental);
                 await applicationDb.SaveChangesAsync();

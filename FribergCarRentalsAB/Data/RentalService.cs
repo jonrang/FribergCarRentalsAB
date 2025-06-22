@@ -1,5 +1,4 @@
 ﻿using FribergCarRentalsAB.Models;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,7 +9,7 @@ namespace FribergCarRentalsAB.Data
         private readonly ICarRepository cars;
         private readonly IRentalRepository rentals;
         private readonly IUserRepository users;
-        private readonly ApplicationDbContext db; // for transaction/SaveChanges
+        private readonly ApplicationDbContext db; 
 
         public RentalService(
           ICarRepository carRepo,
@@ -57,7 +56,7 @@ namespace FribergCarRentalsAB.Data
                 Status = status
             };
 
-            // transactionally create rental + flip availability
+
             await db.Database.BeginTransactionAsync();
             try
             {
@@ -139,15 +138,15 @@ namespace FribergCarRentalsAB.Data
         public async Task<SelectList> GetUsersSelectListAsync()
         {
             var users = await this.users.GetAllAsync();
-            var list =  users.Select((ApplicationUser u) => new { u.Id, Display = u.FullName ?? u.UserName })
+            var list = users.Select((ApplicationUser u) => new { u.Id, Display = u.FullName ?? u.UserName })
               .ToList();
             return new SelectList(list, "Id", "Display");
         }
 
         public async Task<IList<Rental>> GetActiveRentalsAsync(int userId = 0)
         {
-            var query = db.Rentals.AsQueryable().Where(r => r.Status == RentalStatus.Active || r.Status == RentalStatus.Pending );
-            if (0!=userId)
+            var query = db.Rentals.AsQueryable().Where(r => r.Status == RentalStatus.Active || r.Status == RentalStatus.Pending);
+            if (0 != userId)
                 query = query.Where(r => r.UserId == userId);
             return await query.Include(r => r.Car).Include(r => r.User).ToListAsync();
         }

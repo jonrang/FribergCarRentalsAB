@@ -1,6 +1,4 @@
 ﻿// Models/HomeIndexViewModel.cs
-using System.Collections.Generic;
-
 namespace FribergCarRentalsAB.Models
 {
     public class HomeIndexViewModel

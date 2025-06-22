@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 
 namespace FribergCarRentalsAB.Models
 {
@@ -9,7 +8,6 @@ namespace FribergCarRentalsAB.Models
         public DateTime DateOfBirth { get; set; }
         public string DriverLicenseNumber { get; set; } = string.Empty;
         public string PhoneNumber { get; set; } = string.Empty;
-        // navigation
         public virtual ICollection<Rental> Rentals { get; set; }
 
     }

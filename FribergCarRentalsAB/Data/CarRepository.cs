@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using FribergCarRentalsAB.Models;
+﻿using FribergCarRentalsAB.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace FribergCarRentalsAB.Data

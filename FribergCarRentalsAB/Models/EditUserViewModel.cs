@@ -1,7 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Collections.Generic;
-
-namespace FribergCarRentalsAB.Models
+﻿namespace FribergCarRentalsAB.Models
 {
     public class EditUserViewModel
     {

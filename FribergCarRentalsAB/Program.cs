@@ -2,8 +2,6 @@ using FribergCarRentalsAB.Data;
 using FribergCarRentalsAB.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Model;
 
 namespace FribergCarRentalsAB
 {
@@ -82,8 +80,3 @@ namespace FribergCarRentalsAB
         }
     }
 }
-//-Validation attributes(e.g.ensure EndDate > StartDate)
-//- A small lookup table for car categories (SUV, Sedan, etc.)
-//- Soft-delete flags or audit trails
-//- A simple availability checker that filters out cars with overlapping active rentals
-//That blueprint should give you a fully working toy rental site with clear separation of concerns�and a foundation you can easily extend.

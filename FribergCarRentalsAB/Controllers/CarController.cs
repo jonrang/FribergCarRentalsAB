@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using FribergCarRentalsAB.Data;
+using FribergCarRentalsAB.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using FribergCarRentalsAB.Data;
-using FribergCarRentalsAB.Models;
 
 namespace FribergCarRentalsAB.Controllers
 {
@@ -137,7 +133,7 @@ namespace FribergCarRentalsAB.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-           
+
             await carRepository.Delete(id);
             return RedirectToAction(nameof(Index));
         }
@@ -150,7 +146,7 @@ namespace FribergCarRentalsAB.Controllers
 
             var files = Directory
               .GetFiles(imagesFolder)
-              .Select(Path.GetFileName)   
+              .Select(Path.GetFileName)
               .OrderBy(n => n)
               .ToList();
 

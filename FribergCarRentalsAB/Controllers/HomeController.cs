@@ -1,11 +1,7 @@
 using System.Diagnostics;
-using FribergCarRentalsAB.Models;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using System.IO;
-using System.Linq;
-using Microsoft.AspNetCore.Hosting;
 using FribergCarRentalsAB.Data;
+using FribergCarRentalsAB.Models;
+using Microsoft.AspNetCore.Mvc;
 
 
 namespace FribergCarRentalsAB.Controllers

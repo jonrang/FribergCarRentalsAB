@@ -10,7 +10,7 @@ namespace FribergCarRentalsAB.Data
             var roleMgr = services.GetRequiredService<RoleManager<IdentityRole<int>>>();
             var userMgr = services.GetRequiredService<UserManager<ApplicationUser>>();
 
-            // 1) Ensure roles exist
+          
             string[] roles = { "Admin", "User" };
             foreach (var role in roles)
             {
@@ -18,15 +18,6 @@ namespace FribergCarRentalsAB.Data
                     await roleMgr.CreateAsync(new IdentityRole<int>(role));
             }
 
-            // 2) (Optional) Seed a default admin
-            //var adminEmail = "admin@yourapp.com";
-            //var admin = await userMgr.FindByEmailAsync(adminEmail);
-            //if (admin == null)
-            //{
-            //    admin = new ApplicationUser { UserName = adminEmail, Email = adminEmail };
-            //    await userMgr.CreateAsync(admin, "P@ssw0rd!");           // choose a secure default
-            //    await userMgr.AddToRoleAsync(admin, "Admin");
-            //}
         }
     }
 }

@@ -1,16 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.ConstrainedExecution;
-using System.Security.Claims;
-using System.Threading.Tasks;
+﻿using System.Security.Claims;
 using FribergCarRentalsAB.Data;
 using FribergCarRentalsAB.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 
 namespace FribergCarRentalsAB.Controllers
 {
@@ -89,7 +82,7 @@ namespace FribergCarRentalsAB.Controllers
         // GET: /Rental/Create
         public async Task<IActionResult> Create(int? carId)
         {
-            
+
             ViewBag.Cars = await rentalService.GetAvailableCarsAsync(carId);
 
             var vm = new RentalInputModel

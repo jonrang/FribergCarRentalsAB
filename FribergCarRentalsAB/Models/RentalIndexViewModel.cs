@@ -1,6 +1,4 @@
 ﻿// Models/RentalIndexViewModel.cs
-using System.Collections.Generic;
-
 namespace FribergCarRentalsAB.Models
 {
     public class RentalIndexViewModel

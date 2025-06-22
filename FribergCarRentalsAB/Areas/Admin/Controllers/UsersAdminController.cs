@@ -27,7 +27,8 @@ namespace FribergCarRentalsAB.Areas.Admin.Controllers
             foreach (var user in users)
             {
                 var roles = await userManager.GetRolesAsync(user);
-                vm.Add(new UserAdminViewModel {
+                vm.Add(new UserAdminViewModel
+                {
                     Id = user.Id,
                     Email = user.Email!,
                     Roles = roles
@@ -59,7 +60,7 @@ namespace FribergCarRentalsAB.Areas.Admin.Controllers
             var user = await userManager.FindByIdAsync(vm.Id.ToString());
             if (user == null) return NotFound();
 
-            
+
             user.FullName = vm.FullName;
             var upd = await userManager.UpdateAsync(user);
             if (!upd.Succeeded)
@@ -85,7 +86,7 @@ namespace FribergCarRentalsAB.Areas.Admin.Controllers
         {
             var user = await userManager.FindByIdAsync(id.ToString());
             if (user != null)
-            { 
+            {
                 await userManager.DeleteAsync(user);
                 TempData["Success"] = "Användare borttagen.";
             }

@@ -1,7 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Collections.Generic;
 
 public class CarCreateViewModel
 {
@@ -14,7 +12,7 @@ public class CarCreateViewModel
     [Range(1900, 2100)]
     public int Year { get; set; }
 
-    [Required, RegularExpression(@"^[A-Z0-9\-]+$", 
+    [Required, RegularExpression(@"^[A-Z0-9\-]+$",
         ErrorMessage = "uppercase, digits, hyphens, nothing else.")]
     [Display(Name = "License Plate")]
     public string LicensePlate { get; set; }
