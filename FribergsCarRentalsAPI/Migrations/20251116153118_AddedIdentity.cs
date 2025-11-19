@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace FribergsCarRentalsAPI.Migrations
+namespace FribergCarRentalsAPI.Migrations
 {
     /// <inheritdoc />
     public partial class AddedIdentity : Migration

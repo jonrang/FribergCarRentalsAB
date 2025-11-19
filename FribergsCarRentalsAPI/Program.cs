@@ -1,16 +1,21 @@
 
 using System.Text;
-using FribergsCarRentalsAPI.Data;
+using System.Threading.Tasks;
+using FribergCarRentalsAPI.Constants;
+using FribergCarRentalsAPI.Data;
+using FribergCarRentalsAPI.Data.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
+//using Microsoft.OpenApi.Models;
 
-namespace FribergsCarRentalsAPI
+namespace FribergCarRentalsAPI
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -20,9 +25,24 @@ namespace FribergsCarRentalsAPI
             builder.Services.AddDbContext<CarRentalAPIContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            builder.Services.AddIdentityCore<ApiUser>()
+            builder.Services.AddIdentityCore<ApiUser>(options =>
+            {
+                options.Password.RequireDigit = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequiredLength = 8;
+
+                options.User.RequireUniqueEmail = true;
+
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+                options.Lockout.AllowedForNewUsers = true;
+            })
                 .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<CarRentalAPIContext>();
+                .AddEntityFrameworkStores<CarRentalAPIContext>()
+                .AddRoleManager<RoleManager<IdentityRole>>()
+                .AddDefaultTokenProviders();
 
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -48,14 +68,46 @@ namespace FribergsCarRentalsAPI
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero,
+                    ClockSkew = TimeSpan.FromSeconds(30),
                     ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
                     ValidAudience = builder.Configuration["JwtSettings:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]))
                 };
             });
 
+            //builder.Services.AddSwaggerGen(options =>
+            //{
+            //    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            //    {
+            //        Name = "Authorization",
+            //        Description = "JWT Authorization header using the Bearer scheme.",
+            //        In = ParameterLocation.Header,
+            //        Type = SecuritySchemeType.Http,
+            //        Scheme = "Bearer"
+            //    });
+
+            //    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            //    {
+            //        // Key: Reference to the security scheme defined above ('Bearer')
+            //        {
+            //           new OpenApiSecurityScheme
+            //            {
+            //                Reference = new OpenApiReference
+            //               {
+            //                   Type = ReferenceType.SecurityScheme,
+            //                  Id = "Bearer" // Must match the ID used in AddSecurityDefinition
+            //                }
+            //            }
+            //        }  // Value: An empty list for scopes
+            //    });
+            //});
+
+            builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IAdminService, AdminService>();
+
             var app = builder.Build();
+
+            await DbInitializer.SeedData(app);
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -71,8 +123,8 @@ namespace FribergsCarRentalsAPI
 
             app.UseCors("AllowAll");
 
-            app.UseAuthorization();
             app.UseAuthentication();
+            app.UseAuthorization();
 
 
             app.MapControllers();

@@ -1,4 +1,4 @@
-﻿namespace FribergsCarRentalsAPI.Constants
+﻿namespace FribergCarRentalsAPI.Constants
 {
     public static class ApiRoles
     {

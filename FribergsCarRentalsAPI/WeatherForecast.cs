@@ -1,4 +1,4 @@
-namespace FribergsCarRentalsAPI
+namespace FribergCarRentalsAPI
 {
     public class WeatherForecast
     {

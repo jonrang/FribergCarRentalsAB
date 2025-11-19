@@ -1,167 +1,117 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using FribergsCarRentalsAPI.Constants;
-using FribergsCarRentalsAPI.Data;
-using FribergsCarRentalsAPI.Dto;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
+﻿using FribergCarRentalsAPI.Constants;
+using FribergCarRentalsAPI.Data.Services;
+using FribergCarRentalsAPI.Dto;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 
-namespace FribergsCarRentalsAPI.Controllers
+namespace FribergCarRentalsAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly UserManager<ApiUser> userManager;
-        private readonly IConfiguration configuration;
+        private readonly IAuthService authService;
 
-        public AuthController(UserManager<ApiUser> userManager, IConfiguration configuration)
+        public AuthController(IAuthService authService)
         {
-            this.userManager = userManager;
-            this.configuration = configuration;
+            this.authService = authService;
         }
 
         [HttpPost]
         [Route("register")]
-        public async Task<IActionResult> Register(UserDto userDto)
+        public async Task<IActionResult> Register([FromBody] UserDto userDto)
         {
             try
             {
-                ApiUser user = new ApiUser()
-                {
-                    UserName = userDto.Email,
-                    Email = userDto.Email,
-                    FirstName = userDto.FirstName,
-                    LastName = userDto.LastName
-                };
-                var result = await userManager.CreateAsync(user, userDto.Password);
+                var (success, errors) = await authService.RegisterUserAsync(userDto, ApiRoles.User);
 
-                if (!result.Succeeded)
+                if (success)
                 {
-                    foreach (var error in result.Errors)
-                    {
-                        ModelState.AddModelError(error.Code, error.Description);
-                    }
-                    return BadRequest(ModelState);
+                    return CreatedAtAction(nameof(Login), new { email = userDto.Email }, null);
                 }
+                else
+                {
+                    if (errors.ContainsKey("Email") && errors["Email"].Any(e => e.Contains("exists")))
+                    {
+                        return Conflict(new { Message = errors["Email"].First() });
+                    }
 
-                await userManager.AddToRoleAsync(user, ApiRoles.User);
-                return Ok();
+                    if (errors.ContainsKey("RoleAssignment"))
+                    {
+                        return Problem(errors["RoleAssignment"].First(), statusCode: 500);
+                    }
 
+                    var modelStateDictionary = new Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary();
+                    foreach (var key in errors.Keys)
+                    {
+                        foreach (var error in errors[key])
+                        {
+                            modelStateDictionary.AddModelError(key, error);
+                        }
+                    }
+                    return ValidationProblem(modelStateDictionary);
+                }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return Problem($"Something went wrong in the {nameof(Register)}", statusCode: 500);
+                return Problem($"An unexpected error occurred during registration.", statusCode: 500);
             }
         }
 
         [HttpPost]
         [Route("login")]
-        public async Task<ActionResult<AuthResponse>> Login(LoginUserDto userDto)// [FromBody] LoginRequest request
+        public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginUserDto userDto)//  LoginRequest request
         {
             try
             {
-                var user = await userManager.FindByEmailAsync(userDto.Email);
-                var passwordValid = await userManager.CheckPasswordAsync(user, userDto.Password);
+                var response = await authService.LoginUserAsync(userDto);
 
-                if (passwordValid == false || user == null)
+                // Check if the service returned null (indicating invalid credentials)
+                if (response == null)
                 {
-                    return Unauthorized(userDto);
+                    return Unauthorized(new { Message = "Invalid Credentials" });
                 }
-
-                string tokenString = await GenerateToken(user);
-
-                var response = new AuthResponse
-                {
-                    Email = userDto.Email,
-                    AccessToken = tokenString,
-                    UserId = user.Id
-                };
 
                 return Ok(response);
             }
+            catch (InvalidOperationException ex)
+            {
+                return Problem($"Server error during token persistence: {ex.Message}", statusCode: 500);
+            }
             catch (Exception)
             {
+                // Catch all other unhandled exceptions (should be logged in a real app)
                 return Problem($"Something went wrong in the {nameof(Login)}", statusCode: 500);
             }
 
         }
 
-        [HttpPost("refresh")]
+        [HttpPost]
+        [Route("refresh")]
         public async Task<IActionResult> Refresh([FromBody] AuthResponse authResponse)
         {
-            var principal = GetClaimsPrincipalFromExpiredToken(authResponse.Token);
-            var userName = principal.Identity.Name;
-
-            var savedRefreshToken = await userManager.GetRefreshTokenAsync(userName);
-            if (savedRefreshToken != authResponse.RefreshToken) return Unauthorized();
-
-            var user = await userManager.FindByEmailAsync(userName);
-            var newAccessToken = GenerateToken(user);
-            var newRefreshToken = GenerateRefreshToken();
-
-            await userManager.SaveRefreshTokenAsync(userName, newRefreshToken);
-
-            return Ok(newAccessToken);
-        }
-
-        private async Task<string> GenerateToken(ApiUser user)
-        {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSettings:Key"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-            var roles = await userManager.GetRolesAsync(user);
-            var roleClaims = roles.Select(q => new Claim(ClaimTypes.Role, q)).ToList();
-
-            var userClaims = await userManager.GetClaimsAsync(user);
-
-            var claims = new List<Claim>
+            if (authResponse is null ||
+                string.IsNullOrWhiteSpace(authResponse.AccessToken) ||
+                string.IsNullOrWhiteSpace(authResponse.RefreshToken))
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(CustomClaimTypes.Uid, user.Id)
+                return BadRequest(new { Message = "Invalid client request: Tokens missing." });
             }
-            .Union(roleClaims)
-            .Union(userClaims);
 
-            var token = new JwtSecurityToken(
-                issuer: configuration["JwtSettings:Issuer"],
-                audience: configuration["JwtSettings:Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(Convert.ToInt32(configuration["JwtSettings:DurationInMinutes"])),
-                signingCredentials: credentials
-                );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-        
-
-        private ClaimsPrincipal GetClaimsPrincipalFromExpiredToken(string token)
-        {
-            var tokenValidationParameters = new TokenValidationParameters
+            try
             {
-                ValidateAudience = false,
-                ValidateIssuer = false,
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSettings:Key"])),
-                ValidateLifetime = false
-            };
+                var response = await authService.RefreshTokenAsync(authResponse.AccessToken, authResponse.RefreshToken);
 
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
+                if (response == null)
+                {
+                    // The service returns null if the token is invalid, used, or expired.
+                    return Unauthorized(new { Message = "Invalid or expired refresh token." });
+                }
 
-            if (securityToken is not JwtSecurityToken jwtSecurityToken ||
-                !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
-                StringComparison.InvariantCultureIgnoreCase))
-            {
-                throw new SecurityTokenException("Invalid token");
+                return Ok(response);
             }
-            return principal;
+            catch (Exception)
+            {
+                return Problem("An unexpected server error occurred during token refresh.", statusCode: 500);
+            }
         }
     }
 }

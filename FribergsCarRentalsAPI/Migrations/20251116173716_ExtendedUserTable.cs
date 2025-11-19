@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace FribergsCarRentalsAPI.Migrations
+namespace FribergCarRentalsAPI.Migrations
 {
     /// <inheritdoc />
     public partial class ExtendedUserTable : Migration

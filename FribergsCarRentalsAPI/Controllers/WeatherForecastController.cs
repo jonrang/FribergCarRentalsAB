@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace FribergsCarRentalsAPI.Controllers
+namespace FribergCarRentalsAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]

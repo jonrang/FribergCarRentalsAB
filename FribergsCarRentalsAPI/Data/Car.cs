@@ -1,4 +1,4 @@
-﻿namespace FribergsCarRentalsAPI.Data
+﻿namespace FribergCarRentalsAPI.Data
 {
     public class Car
     {

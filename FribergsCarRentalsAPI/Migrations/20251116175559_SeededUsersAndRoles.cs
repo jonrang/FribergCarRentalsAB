@@ -4,7 +4,7 @@
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace FribergsCarRentalsAPI.Migrations
+namespace FribergCarRentalsAPI.Migrations
 {
     /// <inheritdoc />
     public partial class SeededUsersAndRoles : Migration
