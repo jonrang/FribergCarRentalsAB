@@ -134,6 +134,9 @@ namespace FribergCarRentalsAPI.Data.Services
                 Email = userDto.Email,
                 FirstName = userDto.FirstName,
                 LastName = userDto.LastName,
+                DateOfBirth = userDto.DateOfBirth, 
+                DriverLicenseNumber = userDto.DriverLicenseNumber,
+                PhoneNumber = userDto.PhoneNumber,
             };
 
             var result = await userManager.CreateAsync(user, userDto.Password);
@@ -175,13 +178,17 @@ namespace FribergCarRentalsAPI.Data.Services
 
             var userClaims = await userManager.GetClaimsAsync(user);
 
+            var isOfAge = IsUserOfAge(user);
+
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(CustomClaimTypes.Uid, user.Id)
+                new Claim(CustomClaimTypes.Uid, user.Id),
+                new Claim("IsOfAge", isOfAge.ToString()),
+                new Claim("HasDriverLicense", user.DriverLicenseNumber != string.Empty ? "true" : "false")
             }
             .Union(roleClaims)
             .Union(userClaims);
@@ -196,6 +203,15 @@ namespace FribergCarRentalsAPI.Data.Services
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
             return (tokenString, tokenExpiryTime);
+        }
+
+        private bool IsUserOfAge(ApiUser user)
+        {
+            var minAge = configuration.GetValue<int>("RentalSettings:MinimumDrivingAge");
+
+            var requiredDateOfBirth = DateTime.Today.AddYears(-minAge);
+
+            return user.DateOfBirth <= requiredDateOfBirth;
         }
 
         private static string GenerateRefreshToken()

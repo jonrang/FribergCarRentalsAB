@@ -38,6 +38,9 @@ namespace FribergCarRentalsAPI.Data.Services
                 Email = data.User.Email,
                 FirstName = data.User.FirstName,
                 LastName = data.User.LastName,
+                DateOfBirth = data.User.DateOfBirth,
+                DriverLicenseNumber = data.User.DriverLicenseNumber,
+                PhoneNumber = data.User.PhoneNumber,
                 Roles = data.Roles.ToArray()
             }).ToList();
 
@@ -59,6 +62,8 @@ namespace FribergCarRentalsAPI.Data.Services
 
             user.FirstName = updateDto.FirstName;
             user.LastName = updateDto.LastName;
+            user.DateOfBirth = updateDto.DateOfBirth;
+            user.DriverLicenseNumber = updateDto.DriverLicenseNumber;
 
             // Note: Do not allow changing email or password through a generic Update.
             // Use dedicated Identity methods for that (e.g., ChangeEmailAsync).

@@ -7,6 +7,9 @@ namespace FribergCarRentalsAPI.Data
 {
     public class CarRentalAPIContext : IdentityDbContext<ApiUser>
     {
+        public DbSet<Car> Cars { get; set; }
+        public DbSet<CarModel> CarModels { get; set; }
+        public DbSet<Rental> Rentals { get; set; }
         public CarRentalAPIContext(DbContextOptions options) 
             : base(options)
         {
