@@ -14,9 +14,8 @@ namespace FribergCarRentalsAPI.Constants
 
             var logger = services.GetRequiredService<ILoggerFactory>().CreateLogger("DbInitializer");
 
-            var configuration = services.GetRequiredService<IConfiguration>(); // <-- NEW
+            var configuration = services.GetRequiredService<IConfiguration>();
 
-            // Retrieve the password securely from the configuration
             var adminPassword = configuration["SeedSettings:AdminPassword"];
 
             if (string.IsNullOrWhiteSpace(adminPassword))
