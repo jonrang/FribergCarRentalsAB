@@ -18,7 +18,7 @@ namespace FribergCarRentalsAPI.Controllers
 
         [HttpPost]
         [Route("register")]
-        public async Task<IActionResult> Register([FromBody] UserDto userDto)
+        public async Task<IActionResult> Register([FromBody] RegisterUserDto userDto)
         {
             try
             {

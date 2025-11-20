@@ -161,9 +161,27 @@ namespace FribergCarRentalsAPI.Data.Services
             return (true, null);
         }
 
-        public Task<IEnumerable<RentalViewDto>> GetAllRentalsAsync()
+        public async Task<IEnumerable<RentalViewDto>> GetAllRentalsAsync()
         {
-            throw new NotImplementedException();
+            var rentals = await context.Rentals
+                .Include (r => r.Car!)
+                    .ThenInclude(c => c.Model)
+                .Include(r => r.User)
+                .OrderByDescending(r => r.StartDate)
+                .Select(r => new RentalViewDto
+                {
+                    RentalId = r.Id,
+                    CarDetails = $"{r.Car!.Model.Manufacturer} {r.Car.Model.Name} (LP: {r.Car.LicensePlate})",
+                    StartDate = r.StartDate,
+                    EndDate = r.EndDate,
+                    Status = r.Status.ToString(),
+                    TotalCost = r.TotalCost,
+                    UserId = r.UserId,
+                    UserEmail = r.User.Email!
+                })
+                .ToListAsync();
+
+            return rentals;
         }
 
         public async Task<RentalViewDto?> GetRentalByIdAsync(int rentalId)

@@ -117,7 +117,7 @@ namespace FribergCarRentalsAPI.Data.Services
             };
         }
 
-        public async Task<(bool Success, IDictionary<string, string[]> Errors)> RegisterUserAsync(UserDto userDto, string defaultRole)
+        public async Task<(bool Success, IDictionary<string, string[]> Errors)> RegisterUserAsync(RegisterUserDto userDto, string defaultRole)
         {
             var existingUser = await userManager.FindByEmailAsync(userDto.Email);
             if (existingUser != null)

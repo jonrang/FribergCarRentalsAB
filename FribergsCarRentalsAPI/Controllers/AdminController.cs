@@ -13,11 +13,11 @@ namespace FribergCarRentalsAPI.Controllers
     [ApiController]
     public class AdminController : ControllerBase
     {
-        private readonly IAdminService adminService;
+        private readonly IUserService userService;
 
-        public AdminController(IAdminService adminService)
+        public AdminController(IUserService userService)
         {
-            this.adminService = adminService;
+            this.userService = userService;
         }
 
         // GET /api/admin/users 
@@ -26,7 +26,7 @@ namespace FribergCarRentalsAPI.Controllers
         {
             try
             {
-                var users = await adminService.GetAllUsersAsync();
+                var users = await userService.GetAllUsersAsync();
 
                 return Ok(users);
             }
@@ -40,23 +40,21 @@ namespace FribergCarRentalsAPI.Controllers
         [HttpGet("{userId}")]
         public async Task<IActionResult> GetUser([FromRoute] string userId)
         {
-            var user = await adminService.GetUserByIdAsync(userId);
+            var userView = await userService.GetUserByIdAsync(userId);
 
-            if (user == null)
+            if (userView == null)
             {
                 return NotFound(new { Message = $"User with ID {userId} not found." });
             }
 
-            // You might want to map this to a specific AdminUserDto to avoid exposing 
-            // sensitive fields like PasswordHash or SecurityStamp.
-            return Ok(new { user.Id, user.Email, user.FirstName, user.LastName });
+            return Ok(userView);
         }
 
         // PUT /api/admin/users/{id}
         [HttpPut("{userId}")]
-        public async Task<IActionResult> EditUser([FromRoute] string userId, [FromBody] UserDto updateDto)
+        public async Task<IActionResult> EditUser([FromRoute] string userId, [FromBody] AdminProfileUpdateDto updateDto)
         {
-            var (success, errors) = await adminService.UpdateUserDetailsAsync(userId, updateDto);
+            var (success, errors) = await userService.UpdateUserByAdminAsync(userId, updateDto);
 
             if (!success)
             {
@@ -76,27 +74,27 @@ namespace FribergCarRentalsAPI.Controllers
                 }
                 return ValidationProblem(modelStateDictionary);
             }
-            return NoContent(); // 204 No Content typically for a successful PUT update
+            return NoContent();
         }
 
         // DELETE /api/admin/users/{id}
         [HttpDelete("{userId}")]
         public async Task<IActionResult> DeleteUser([FromRoute] string userId)
         {
-            bool success = await adminService.DeleteUserAsync(userId);
+            bool success = await userService.DeleteUserAsync(userId);
 
             if (!success)
             {
                 return Problem("Failed to delete user due to a server error.", statusCode: 500);
             }
-            return NoContent(); // 204 No Content typically for a successful DELETE
+            return NoContent();
         }
 
         // POST /api/admin/users/{id}/role
         [HttpPost("{userId}/role")]
         public async Task<IActionResult> ChangeRole([FromRoute] string userId, [FromBody] string newRole)
         {
-            var (success, errors) = await adminService.ChangeUserRoleAsync(userId, newRole);
+            var (success, errors) = await userService.ChangeUserRoleAsync(userId, newRole);
 
             if (!success)
             {

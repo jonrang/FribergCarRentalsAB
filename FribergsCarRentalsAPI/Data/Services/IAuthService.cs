@@ -6,6 +6,6 @@ namespace FribergCarRentalsAPI.Data.Services
     {
         Task<AuthResponse?> LoginUserAsync(LoginUserDto userDto);
         Task<AuthResponse?> RefreshTokenAsync(string accessToken, string refreshToken);
-        Task<(bool Success, IDictionary<string, string[]> Errors)> RegisterUserAsync(UserDto userDto, string defaultRole);
+        Task<(bool Success, IDictionary<string, string[]> Errors)> RegisterUserAsync(RegisterUserDto userDto, string defaultRole);
     }
 }

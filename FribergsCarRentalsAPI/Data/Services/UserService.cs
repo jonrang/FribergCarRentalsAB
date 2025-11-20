@@ -5,16 +5,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FribergCarRentalsAPI.Data.Services
 {
-    public class AdminService : IAdminService
+    public class UserService : IUserService
     {
         private readonly UserManager<ApiUser> userManager;
-        private readonly RoleManager<IdentityRole> roleManager;
         private readonly CarRentalAPIContext carRentalAPIContext;
 
-        public AdminService(UserManager<ApiUser> userManager, RoleManager<IdentityRole> roleManager, CarRentalAPIContext carRentalAPIContext)
+        public UserService(UserManager<ApiUser> userManager, CarRentalAPIContext carRentalAPIContext)
         {
             this.userManager = userManager;
-            this.roleManager = roleManager;
             this.carRentalAPIContext = carRentalAPIContext;
         }
 
@@ -47,12 +45,30 @@ namespace FribergCarRentalsAPI.Data.Services
             return userViews;
         }
 
-        public Task<ApiUser?> GetUserByIdAsync(string userId)
+        public async Task<AdminUserViewDto> GetUserByIdAsync(string userId)
         {
-            return userManager.FindByIdAsync(userId);
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return null;
+            }
+
+            var roles = await userManager.GetRolesAsync(user);
+
+            return new AdminUserViewDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                DateOfBirth = user.DateOfBirth,
+                DriverLicenseNumber = user.DriverLicenseNumber,
+                PhoneNumber = user.PhoneNumber,
+                Roles = roles.ToArray()
+            };
         }
 
-        public async Task<(bool Success, IDictionary<string, string[]> Errors)> UpdateUserDetailsAsync(string userId, UserDto updateDto)
+        public async Task<(bool Success, IDictionary<string, string[]> Errors)> UpdateUserByAdminAsync(string userId, AdminProfileUpdateDto updateDto)
         {
             var user = await userManager.FindByIdAsync(userId);
             if (user == null)
@@ -64,9 +80,29 @@ namespace FribergCarRentalsAPI.Data.Services
             user.LastName = updateDto.LastName;
             user.DateOfBirth = updateDto.DateOfBirth;
             user.DriverLicenseNumber = updateDto.DriverLicenseNumber;
+            user.PhoneNumber = updateDto.PhoneNumber;
 
-            // Note: Do not allow changing email or password through a generic Update.
-            // Use dedicated Identity methods for that (e.g., ChangeEmailAsync).
+            var result = await userManager.UpdateAsync(user);
+
+            if (!result.Succeeded)
+            {
+                return (false, MapIdentityErrors(result));
+            }
+
+            return (true, new Dictionary<string, string[]>());
+        }
+
+        public async Task<(bool Success, IDictionary<string, string[]> Errors)> UpdateUserProfileAsync(string userId, CustomerProfileUpdateDto updateDto)
+        {
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return (false, new Dictionary<string, string[]> { { "User", new[] { "User not found." } } });
+            }
+
+            user.FirstName = updateDto.FirstName;
+            user.LastName = updateDto.LastName;
+            user.PhoneNumber = updateDto.PhoneNumber;
 
             var result = await userManager.UpdateAsync(user);
 
@@ -120,6 +156,24 @@ namespace FribergCarRentalsAPI.Data.Services
             if (!addResult.Succeeded)
             {
                 return (false, MapIdentityErrors(addResult));
+            }
+
+            return (true, new Dictionary<string, string[]>());
+        }
+
+        public async Task<(bool Success, IDictionary<string, string[]> Errors)> ChangeUserPasswordAsync(string userId, ChangePasswordDto changeDto)
+        {
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return (true, new Dictionary<string, string[]>());
+            }
+
+            var result = await userManager.ChangePasswordAsync(user, changeDto.CurrentPassword, changeDto.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                return (false, MapIdentityErrors(result));
             }
 
             return (true, new Dictionary<string, string[]>());
