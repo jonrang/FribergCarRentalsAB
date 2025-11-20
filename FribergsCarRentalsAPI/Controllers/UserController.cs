@@ -3,6 +3,7 @@ using FribergCarRentalsAPI.Data.Services;
 using FribergCarRentalsAPI.Dto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -27,12 +28,11 @@ namespace FribergCarRentalsAPI.Controllers
 
         // GET /api/users/me 
         [HttpGet("me")]
-        public async Task<ActionResult<AdminUserViewDto>> GetMyProfile()
+        public async Task<ActionResult<CustomerProfileViewDto>> GetMyProfile()
         {
             var userId = GetCurrentUserId();
             if (userId == null) return Unauthorized();
 
-            // Uses the AdminViewDto for retrieval since it contains all profile data (safe, as user is viewing their own data)
             var userView = await userService.GetUserByIdAsync(userId);
 
             if (userView == null)
@@ -40,7 +40,17 @@ namespace FribergCarRentalsAPI.Controllers
                 return NotFound("User profile not found.");
             }
 
-            return Ok(userView);
+            var customerView = new CustomerProfileViewDto
+            {
+                Email = userView.Email,
+                FirstName = userView.FirstName,
+                LastName = userView.LastName,
+                PhoneNumber = userView.PhoneNumber,
+                DateOfBirth = userView.DateOfBirth,
+                DriverLicenseNumber = userView.DriverLicenseNumber
+            };
+
+            return Ok(customerView);
         }
 
         // PUT /api/users/me

@@ -38,16 +38,22 @@ namespace FribergCarRentalsAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateRental([FromBody] CreateRentalDto rentalDto)
         {
+            var isOfAge = User.FindFirst("IsOfAge")?.Value == "True";
+            var hasLicense = User.FindFirst("HasDriverLicense")?.Value == "True";
+
+            if (!isOfAge || !hasLicense)
+            {
+                return BadRequest(new { Message = "User must be of age and have a valid driver's license on file to book." });
+            }
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userId == null) return Unauthorized();
 
-            var (success, error, rentalView) = await rentalService.CreateRentalAsync(rentalDto, userId, User);
+            var (success, error, rentalView) = await rentalService.CreateRentalAsync(rentalDto, userId);
 
             if (!success)
             {
                 if (error!.Contains("not found")) return NotFound(new { Message = error });
                 if (error.Contains("already booked") || error.Contains("duration")) return Conflict(new { Message = error });
-                if (error.Contains("license")) return BadRequest(new { Message = error });
 
                 return Problem(error, statusCode: 500);
             }

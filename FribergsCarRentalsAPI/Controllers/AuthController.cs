@@ -1,7 +1,10 @@
 ﻿using FribergCarRentalsAPI.Constants;
 using FribergCarRentalsAPI.Data.Services;
 using FribergCarRentalsAPI.Dto;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 
 namespace FribergCarRentalsAPI.Controllers
 {
@@ -22,11 +25,20 @@ namespace FribergCarRentalsAPI.Controllers
         {
             try
             {
-                var (success, errors) = await authService.RegisterUserAsync(userDto, ApiRoles.User);
+                var (success, errors, userId, token) = await authService.RegisterUserAsync(userDto, ApiRoles.User);
 
                 if (success)
                 {
-                    return CreatedAtAction(nameof(Login), new { email = userDto.Email }, null);
+                    var scheme = HttpContext.Request.Scheme;
+                    var host = HttpContext.Request.Host.ToUriComponent();
+
+                    var confirmationLink = $"{scheme}://{host}/api/auth/confirm-email?userId={userId}&token={Uri.EscapeDataString(token)}";
+
+                    return Ok(new
+                    {
+                        Message = "Registration successful. Please confirm your email.",
+                        ConfirmationLink = confirmationLink
+                    });
                 }
                 else
                 {
@@ -55,6 +67,22 @@ namespace FribergCarRentalsAPI.Controllers
             {
                 return Problem($"An unexpected error occurred during registration.", statusCode: 500);
             }
+        }
+
+        // GET /api/auth/confirm-email?userId=...&token=...
+        [HttpGet("confirm-email")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
+        {
+            var (success, errorMessage) = await authService.ConfirmEmailAsync(userId, token);
+
+            if (success)
+            {
+                return Ok(new { Message = "Email confirmed successfully. You can now log in." });
+            }
+
+            // Returns a 400 Bad Request with the generic error message from the service
+            return BadRequest(new { Message = errorMessage });
         }
 
         [HttpPost]

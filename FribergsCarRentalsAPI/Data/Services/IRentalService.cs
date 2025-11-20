@@ -6,7 +6,7 @@ namespace FribergCarRentalsAPI.Data.Services
     public interface IRentalService
     {
         // Customer Methods
-        Task<(bool Success, string? Error, RentalViewDto? Rental)> CreateRentalAsync(CreateRentalDto rentalDto, string userId, ClaimsPrincipal userClaims);
+        Task<(bool Success, string? Error, RentalViewDto? Rental)> CreateRentalAsync(CreateRentalDto rentalDto, string userId);
         Task<IEnumerable<RentalViewDto>> GetUserRentalsAsync(string userId);
         Task<(bool Success, string? Error)> CancelRentalAsync(int rentalId, string userId);
 

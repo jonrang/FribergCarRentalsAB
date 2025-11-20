@@ -1,4 +1,5 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -117,7 +118,7 @@ namespace FribergCarRentalsAPI.Data.Services
             };
         }
 
-        public async Task<(bool Success, IDictionary<string, string[]> Errors)> RegisterUserAsync(RegisterUserDto userDto, string defaultRole)
+        public async Task<(bool Success, IDictionary<string, string[]> Errors,string? userID, string? token)> RegisterUserAsync(RegisterUserDto userDto, string defaultRole)
         {
             var existingUser = await userManager.FindByEmailAsync(userDto.Email);
             if (existingUser != null)
@@ -125,7 +126,7 @@ namespace FribergCarRentalsAPI.Data.Services
                 return (false, new Dictionary<string, string[]>
             {
                 { "Email", new[] { "A user with this email address already exists." } }
-            });
+            }, null, null);
             }
 
             ApiUser user = new ApiUser()
@@ -149,7 +150,7 @@ namespace FribergCarRentalsAPI.Data.Services
                         g => g.Key,
                         g => g.Select(e => e.Description).ToArray()
                     );
-                return (false, errors);
+                return (false, errors, null, null);
             }
 
             var roleResult = await userManager.AddToRoleAsync(user, defaultRole);
@@ -159,10 +160,41 @@ namespace FribergCarRentalsAPI.Data.Services
                 return (false, new Dictionary<string, string[]>
             {
                 { "RoleAssignment", new[] { "User was created but failed to assign the default role." } }
-            });
+            }, null, null);
+            }
+            var token =  await GenerateEmailConfirmationTokenAsync(user.Id);
+
+            return (true, new Dictionary<string, string[]>(), user.Id, token);
+        }
+
+        public async Task<string?> GenerateEmailConfirmationTokenAsync(string userId)
+        {
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return null;
             }
 
-            return (true, new Dictionary<string, string[]>());
+            var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+            return token;
+        }
+
+        public async Task<(bool Success, string? ErrorMessage)> ConfirmEmailAsync(string userId, string token)
+        {
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return (false, "Confirmation failed. The link is invalid or expired.");
+            }
+
+            var result = await userManager.ConfirmEmailAsync(user, token);
+
+            if (result.Succeeded)
+            {
+                return (true, null);
+            }
+
+            return (false, "Confirmation failed. The link is invalid or expired.");
         }
 
         private async Task<(string tokenString, DateTime expiryTime)> GenerateToken(ApiUser user)
@@ -176,28 +208,28 @@ namespace FribergCarRentalsAPI.Data.Services
             var roles = await userManager.GetRolesAsync(user);
             var roleClaims = roles.Select(q => new Claim(ClaimTypes.Role, q)).ToList();
 
-            var userClaims = await userManager.GetClaimsAsync(user);
 
             var isOfAge = IsUserOfAge(user);
+            var hasLicense = !string.IsNullOrWhiteSpace(user.DriverLicenseNumber);
 
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(CustomClaimTypes.Uid, user.Id),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim("IsOfAge", isOfAge.ToString()),
-                new Claim("HasDriverLicense", user.DriverLicenseNumber != string.Empty ? "true" : "false")
+                new Claim("HasDriverLicense", hasLicense.ToString())
             }
             .Union(roleClaims)
-            .Union(userClaims);
+            .Union(await userManager.GetClaimsAsync(user));
 
             var token = new JwtSecurityToken(
                 issuer: configuration["JwtSettings:Issuer"],
                 audience: configuration["JwtSettings:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(Convert.ToInt32(configuration["JwtSettings:DurationInMinutes"])),
+                expires: tokenExpiryTime,
                 signingCredentials: credentials
                 );
 

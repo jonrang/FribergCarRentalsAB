@@ -105,6 +105,7 @@ namespace FribergCarRentalsAPI
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<ICarService, CarService>();
+            builder.Services.AddScoped<IRentalService, RentalService>();
 
             var app = builder.Build();
 

@@ -75,15 +75,9 @@ namespace FribergCarRentalsAPI.Data.Services
             return (true, null, rental.TotalCost);
         }
 
-        public async Task<(bool Success, string? Error, RentalViewDto? Rental)> CreateRentalAsync(CreateRentalDto rentalDto, string userId, ClaimsPrincipal userClaims)
+        public async Task<(bool Success, string? Error, RentalViewDto? Rental)> CreateRentalAsync(CreateRentalDto rentalDto, string userId)
         {
-            var isOfAge = userClaims.FindFirst("IsOfAge")?.Value == "True";
-            var hasLicense = userClaims.FindFirst("HasDriverLicense")?.Value == "True";
-
-            if (!isOfAge || !hasLicense)
-            {
-                return (false, "User must be of age and have a valid driver's license on file to book.", null);
-            }
+            
 
             var car = await context.Cars.Include(c => c.Model).FirstOrDefaultAsync(c => c.Id == rentalDto.CarId);
             if (car == null || !car.IsAvailable)
