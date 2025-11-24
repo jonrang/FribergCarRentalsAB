@@ -1,4 +1,4 @@
-﻿using FribergCarRentalsAPI.Dto;
+﻿using FribergCarRentalsAPI.Dto.Cars;
 using Microsoft.EntityFrameworkCore;
 
 namespace FribergCarRentalsAPI.Data.Services
@@ -115,7 +115,7 @@ namespace FribergCarRentalsAPI.Data.Services
         public async Task<IEnumerable<CarViewDto>> GetAllCarsAsync()
         {
             var cars = await context.Cars
-                .Where(c => c.IsAvailable)
+                //.Where(c => c.IsAvailable)
                .Include(c => c.Model)
                .Select(c => new CarViewDto
                {
@@ -131,6 +131,21 @@ namespace FribergCarRentalsAPI.Data.Services
                 .ToListAsync();
 
             return cars;
+        }
+
+        public async Task<List<CarModelDto>> GetAllModelsAsync()
+        {
+            var carModel = await context.CarModels
+                .Select(c => new CarModelDto
+                {
+                    CarModelId = c.CarModelId,
+                    Name = c.Name,
+                    Manufacturer = c.Manufacturer,
+                    BodyStyle = c.BodyStyle,
+                    ImageFileName = c.ImageFileName
+                })
+                .ToListAsync();
+            return carModel;
         }
 
         public async Task<IEnumerable<CarViewDto>> GetAvailableCarsAsync(DateOnly startDate, DateOnly endDate)

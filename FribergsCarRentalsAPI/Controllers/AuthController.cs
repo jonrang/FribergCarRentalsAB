@@ -1,6 +1,7 @@
 ﻿using FribergCarRentalsAPI.Constants;
 using FribergCarRentalsAPI.Data.Services;
 using FribergCarRentalsAPI.Dto;
+using FribergCarRentalsAPI.Dto.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -21,7 +22,7 @@ namespace FribergCarRentalsAPI.Controllers
 
         [HttpPost]
         [Route("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterUserDto userDto)
+        public async Task<ActionResult<Response<string>>> Register([FromBody] RegisterUserDto userDto)
         {
             try
             {
@@ -34,38 +35,53 @@ namespace FribergCarRentalsAPI.Controllers
 
                     var confirmationLink = $"{scheme}://{host}/api/auth/confirm-email?userId={userId}&token={Uri.EscapeDataString(token)}";
 
-                    return Ok(new
-                    {
+                    return Ok(new Response<string>
+                    {  
+                        Success = true,
                         Message = "Registration successful. Please confirm your email.",
-                        ConfirmationLink = confirmationLink
+                        Data = confirmationLink
                     });
                 }
                 else
                 {
                     if (errors.ContainsKey("Email") && errors["Email"].Any(e => e.Contains("exists")))
                     {
-                        return Conflict(new { Message = errors["Email"].First() });
+                        return Conflict(new Response<string>
+                        {
+                            Success = false,
+                            Message = errors["Email"].First()
+                        });
                     }
 
                     if (errors.ContainsKey("RoleAssignment"))
                     {
-                        return Problem(errors["RoleAssignment"].First(), statusCode: 500);
+                        return StatusCode(500, new Response<string>
+                        {
+                            Success = false,
+                            Message = errors["RoleAssignment"].First()
+                        });
                     }
 
-                    var modelStateDictionary = new Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary();
-                    foreach (var key in errors.Keys)
+                    var validationErrorDictionary = errors.ToDictionary(
+                        kvp => kvp.Key,
+                        kvp => kvp.Value.ToArray()
+                        );
+
+                    return BadRequest(new Response<string>
                     {
-                        foreach (var error in errors[key])
-                        {
-                            modelStateDictionary.AddModelError(key, error);
-                        }
-                    }
-                    return ValidationProblem(modelStateDictionary);
+                        Success = false,
+                        Message = "Registration failed due to invalid data.",
+                        ValidationErrors = validationErrorDictionary
+                    });
                 }
             }
             catch (Exception)
             {
-                return Problem($"An unexpected error occurred during registration.", statusCode: 500);
+                return StatusCode(500, new Response<string>
+                {
+                    Success = false,
+                    Message = "An unexpected server error occurred during registration."
+                });
             }
         }
 
@@ -87,13 +103,12 @@ namespace FribergCarRentalsAPI.Controllers
 
         [HttpPost]
         [Route("login")]
-        public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginUserDto userDto)//  LoginRequest request
+        public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginUserDto userDto)
         {
             try
             {
                 var response = await authService.LoginUserAsync(userDto);
 
-                // Check if the service returned null (indicating invalid credentials)
                 if (response == null)
                 {
                     return Unauthorized(new { Message = "Invalid Credentials" });
@@ -114,8 +129,9 @@ namespace FribergCarRentalsAPI.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         [Route("refresh")]
-        public async Task<IActionResult> Refresh([FromBody] AuthResponse authResponse)
+        public async Task<ActionResult<AuthResponse>> Refresh([FromBody] RefreshTokenDto authResponse)
         {
             if (authResponse is null ||
                 string.IsNullOrWhiteSpace(authResponse.AccessToken) ||

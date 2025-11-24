@@ -1,5 +1,6 @@
 
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using FribergCarRentalsAPI.Constants;
 using FribergCarRentalsAPI.Data;
@@ -44,7 +45,12 @@ namespace FribergCarRentalsAPI
                 .AddRoleManager<RoleManager<IdentityRole>>()
                 .AddDefaultTokenProviders();
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    // This makes all enums serialize as strings globally
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                });
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
 

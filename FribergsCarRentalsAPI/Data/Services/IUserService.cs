@@ -1,4 +1,4 @@
-﻿using FribergCarRentalsAPI.Dto;
+﻿using FribergCarRentalsAPI.Dto.Users;
 
 namespace FribergCarRentalsAPI.Data.Services
 {

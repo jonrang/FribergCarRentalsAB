@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace FribergCarRentalsAPI.Data
 {
@@ -14,8 +15,8 @@ namespace FribergCarRentalsAPI.Data
     {
         [Key]
         public int Id { get; set; }
-        public string UserId { get; set; }      // FK → ApplicationUser
-        public int CarId { get; set; }      // FK → Car
+        public string UserId { get; set; }
+        public int CarId { get; set; }
         public DateOnly StartDate { get; set; }
         public DateOnly EndDate { get; set; }
         public int DaysBooked { get; set; } // EndDate - Startdate

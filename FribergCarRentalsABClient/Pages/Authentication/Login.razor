@@ -1,0 +1,43 @@
+﻿@page "/login"
+@using FribergCarRentalsABClient.Services.Authentication
+@using FribergCarRentalsABClient.Services.Base
+@inject IAuthenticationService AuthService
+@inject NavigationManager NavManager
+
+<h2>User Login</h2>
+
+<EditForm Model="@LoginModel" OnValidSubmit="@HandleLogin">
+    <DataAnnotationsValidator />
+
+    @* Form fields for Email and Password *@
+    <InputText @bind-Value="LoginModel.Email" placeholder="Email" />
+    <InputText @bind-Value="LoginModel.Password" type="password" placeholder="Password" />
+
+    <button type="submit">Log In</button>
+
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="alert alert-danger">@ErrorMessage</div>
+    }
+</EditForm>
+
+@code {
+    private LoginUserDto LoginModel = new LoginUserDto();
+    private string ErrorMessage = string.Empty;
+
+    private async Task HandleLogin()
+    {
+        ErrorMessage = string.Empty;
+        bool success = await AuthService.Login(LoginModel);
+
+        if (success)
+        {
+            NavManager.NavigateTo("/");
+        }
+        else
+        {
+            ErrorMessage = "Login failed. Please check your credentials.";
+        }
+    }
+
+}

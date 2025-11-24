@@ -1,0 +1,145 @@
+﻿@page "/register"
+@using FribergCarRentalsABClient.Services.Authentication
+@using System.ComponentModel.DataAnnotations
+@using FribergCarRentalsABClient.Services.Base
+@inject IAuthenticationService AuthService
+@inject NavigationManager NavManager
+
+<h3>Create a New Account</h3>
+
+<EditForm Model="@RegistrationModel" OnValidSubmit="@HandleRegistration">
+    <DataAnnotationsValidator />
+
+    <h4>Personal Information</h4>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-6 form-group mb-3">
+            <label>First Name <span class="text-danger">*</span></label>
+            <InputText class="form-control" @bind-Value="RegistrationModel.FirstName" placeholder="Jane" />
+            <ValidationMessage For="@(() => RegistrationModel.FirstName)" />
+            @DisplayError("FirstName")
+        </div>
+        <div class="col-md-6 form-group mb-3">
+            <label>Last Name <span class="text-danger">*</span></label>
+            <InputText class="form-control" @bind-Value="RegistrationModel.LastName" placeholder="Doe" />
+            <ValidationMessage For="@(() => RegistrationModel.LastName)" />
+            @DisplayError("LastName")
+        </div>
+    </div>
+
+    <div class="form-group mb-3">
+        <label>Date of Birth <span class="text-danger">*</span></label>
+        <InputDate class="form-control" @bind-Value="RegistrationModel.DateOfBirth" />
+        <ValidationMessage For="@(() => RegistrationModel.DateOfBirth)" />
+        @DisplayError("DateOfBirth")
+    </div>
+
+    <div class="form-group mb-3">
+        <label>Phone Number</label>
+        <InputText class="form-control" @bind-Value="RegistrationModel.PhoneNumber" placeholder="Optional" />
+        <ValidationMessage For="@(() => RegistrationModel.PhoneNumber)" />
+        @DisplayError("PhoneNumber")
+    </div>
+
+    <div class="form-group mb-4">
+        <label>Driver's License Number <span class="text-danger">*</span></label>
+        <InputText class="form-control" @bind-Value="RegistrationModel.DriverLicenseNumber" />
+        <ValidationMessage For="@(() => RegistrationModel.DriverLicenseNumber)" />
+        @DisplayError("DriverLicenseNumber")
+        <small class="form-text text-muted">Must be 10-20 alphanumeric characters.</small>
+    </div>
+
+    <h4>Account Credentials</h4>
+    <hr />
+
+    <div class="form-group mb-3">
+        <label>Email <span class="text-danger">*</span></label>
+        <InputText class="form-control" @bind-Value="RegistrationModel.Email" placeholder="you@example.com" />
+        <ValidationMessage For="@(() => RegistrationModel.Email)" />
+        @DisplayError("Email")
+    </div>
+
+    <div class="form-group mb-4">
+        <label>Password <span class="text-danger">*</span></label>
+        <InputText class="form-control" @bind-Value="RegistrationModel.Password" type="password" />
+        <ValidationMessage For="@(() => RegistrationModel.Password)" />
+        @DisplayError("Password")
+        <small class="form-text text-muted">Must be at least 6 characters long.</small>
+    </div>
+
+    <button type="submit" class="btn btn-lg btn-success w-100">Register Account</button>
+
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="alert alert-danger mt-3">@ErrorMessage</div>
+    }
+    @if (!string.IsNullOrEmpty(SuccessMessage))
+    {
+        <div class="alert alert-success mt-3">
+            <p>**Registration Successful!**</p>
+            <p>@SuccessMessage</p>
+            @if (!string.IsNullOrEmpty(ConfirmationLink))
+            {
+                <p>Confirmation Link: <a href="@ConfirmationLink">Click to Activate</a> (For testing only)</p>
+            }
+        </div>
+    }
+
+</EditForm>
+
+@code {
+
+    private RegisterUserDto RegistrationModel = new RegisterUserDto() { DateOfBirth = DateTime.Now.AddYears(-20) }; // Default DOB to prevent input error
+    private string ErrorMessage = string.Empty;
+    private string SuccessMessage = string.Empty;
+    private string? ConfirmationLink = null;
+
+    private Dictionary<string, string[]> ValidationErrors = new Dictionary<string, string[]>();
+
+    private async Task HandleRegistration()
+    {
+        ErrorMessage = string.Empty;
+        SuccessMessage = string.Empty;
+        ValidationErrors.Clear();
+        ConfirmationLink = null;
+
+        var result = await AuthService.Register(RegistrationModel);
+
+        if (result.Success)
+        {
+            SuccessMessage = result.Message;
+            ConfirmationLink = result.Data;
+            RegistrationModel = new RegisterUserDto() { DateOfBirth = DateTime.Now.AddYears(-20) };
+        }
+        else
+        {
+            ErrorMessage = result.Message;
+
+            // Populate ValidationErrors for fields that failed server-side checks
+            // if (result.ValidationErrors != null)
+            // {
+            //     ValidationErrors = result.ValidationErrors.ToDictionary(
+            //         kvp => kvp.Key,
+            //         kvp => kvp.Value
+            //     );
+            // }
+        }
+    }
+
+    // Helper to display errors returned by the API that were not caught by client-side DataAnnotations (e.g., email conflict)
+    private RenderFragment DisplayError(string fieldName) => builder =>
+    {
+        // Check if the API returned an error for this specific field name
+        if (ValidationErrors.TryGetValue(fieldName, out var errors))
+        {
+            foreach (var error in errors)
+            {
+                builder.OpenElement(0, "div");
+                builder.AddAttribute(1, "class", "text-danger small");
+                builder.AddContent(2, error);
+                builder.CloseElement();
+            }
+        }
+    };
+}

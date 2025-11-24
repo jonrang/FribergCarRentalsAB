@@ -1,5 +1,5 @@
 ﻿using FribergCarRentalsAPI.Constants;
-using FribergCarRentalsAPI.Dto;
+using FribergCarRentalsAPI.Dto.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 

@@ -1,5 +1,5 @@
 ﻿using System.Security.Claims;
-using FribergCarRentalsAPI.Dto;
+using FribergCarRentalsAPI.Dto.Rentals;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 

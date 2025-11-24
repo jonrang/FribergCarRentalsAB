@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using FribergCarRentalsAPI.Constants;
 using FribergCarRentalsAPI.Dto;
+using FribergCarRentalsAPI.Dto.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 
