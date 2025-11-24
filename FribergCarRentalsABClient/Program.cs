@@ -1,4 +1,5 @@
 using Blazored.LocalStorage;
+using FribergCarRentalsABClient;
 using FribergCarRentalsABClient.Providers;
 using FribergCarRentalsABClient.Services.Admin;
 using FribergCarRentalsABClient.Services.Authentication;
@@ -21,6 +22,8 @@ namespace FribergCarRentalsABClient
             builder.RootComponents.Add<App>("#app");
             builder.RootComponents.Add<HeadOutlet>("head::after");
 
+            //builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+            //builder.Configuration.AddJsonFile($"appsettings.{builder.HostEnvironment.Environment}.json", optional: true, reloadOnChange: true);
             //builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
             builder.Services.AddBlazoredLocalStorage();

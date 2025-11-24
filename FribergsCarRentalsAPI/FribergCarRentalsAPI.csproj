@@ -5,6 +5,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>c1455916-24ab-46d7-9764-e66cd6bb4b58</UserSecretsId>
+	<RootNamespace>FribergCarRentalsAPI</RootNamespace>
+	<BlazorWebAssemblyHost>true</BlazorWebAssemblyHost>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,6 +20,10 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.11" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FribergCarRentalsABClient\FribergCarRentalsABClient.csproj" />
   </ItemGroup>
 
 </Project>
