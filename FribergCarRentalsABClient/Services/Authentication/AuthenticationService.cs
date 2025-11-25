@@ -108,14 +108,22 @@ namespace FribergCarRentalsABClient.Services.Authentication
             }
         }
 
-        public async Task<string?> RefreshTokensAsync(string expiredRefreshToken)
+        public async Task<string?> RefreshTokensAsync()
         {
             try
             {
-                var accessToken = localStorage.GetItemAsStringAsync("accesToken").ToString();
+                var accessToken = await localStorage.GetItemAsStringAsync("accessToken");
+                var refreshToken = await localStorage.GetItemAsStringAsync("refreshToken");
+
+                if (string.IsNullOrEmpty(refreshToken) || string.IsNullOrEmpty(accessToken)) 
+                {
+                    await Logout();
+                    return null;
+                }
+
                 var refreshDto = new RefreshTokenDto
                 {
-                    RefreshToken = expiredRefreshToken,
+                    RefreshToken = refreshToken,
                     AccessToken = accessToken
                 };
                 var response = await apiClient.RefreshAsync(refreshDto);

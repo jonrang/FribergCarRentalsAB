@@ -2,7 +2,7 @@
 {
     public interface ITokenRefresher
     {
-        Task<string?> RefreshTokensAsync(string expiredRefreshToken);
+        Task<string?> RefreshTokensAsync();
         Task Logout();
         Task<bool> IsTokenNearExpiryAsync();
     }

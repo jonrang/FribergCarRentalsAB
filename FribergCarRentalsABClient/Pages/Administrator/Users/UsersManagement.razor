@@ -1,0 +1,193 @@
+﻿@page "/admin/users"
+@using FribergCarRentalsABClient.Services.Admin
+@using FribergCarRentalsABClient.Services.Base
+@attribute [Authorize(Roles = "Administrator")]
+
+@inject IAdminService AdminService
+@inject NavigationManager NavManager
+
+@*
+    NOTE: You will need to define/create the components for:
+    <UserForm OnSaved="ReloadUsers" />
+    <UserDetails CustomerId="@selectedUserId" OnSaved="ReloadUsers" />
+*@
+
+<PageTitle>User Management</PageTitle>
+
+<h3>User Management</h3>
+<p>Search, manage, and assign roles to all user accounts.</p>
+
+<div class="mb-3">
+	<button class="btn btn-secondary" @onclick="ClearSelection">Clear Selection</button>
+</div>
+
+@if (!string.IsNullOrEmpty(selectedUserId))
+{
+	<div class="mt-4">
+		@* This component will display all details, rentals, and role management controls *@
+		<UserDetails UserId="@selectedUserId" OnSaved="ReloadUsers" />
+	</div>
+}
+
+@* --- Search Input --- *@
+<div class="row mb-3 mt-4">
+	<div class="col-md-6">
+		<input type="text" @bind="SearchTerm" @bind:event="oninput" placeholder="Search by name, email, phone, or address..." class="form-control" />
+	</div>
+</div>
+
+@* --- User List Table --- *@
+@if (IsLoading)
+{
+	<p>Loading users...</p>
+}
+else if (!string.IsNullOrEmpty(ErrorMessage))
+{
+	<div class="alert alert-danger">@ErrorMessage</div>
+}
+else
+{
+	<table class="table table-striped table-hover">
+		<thead>
+			<tr>
+				<th @onclick="() => SortBy(nameof(AdminUserViewDto.Id))">ID @SortIcon(nameof(AdminUserViewDto.Id))</th>
+				<th @onclick="() => SortBy(nameof(AdminUserViewDto.LastName))">Name @SortIcon(nameof(AdminUserViewDto.LastName))</th>
+				<th @onclick="() => SortBy(nameof(AdminUserViewDto.Email))">Email @SortIcon(nameof(AdminUserViewDto.Email))</th>
+				<th @onclick="() => SortBy(nameof(AdminUserViewDto.PhoneNumber))">Phone @SortIcon(nameof(AdminUserViewDto.PhoneNumber))</th>
+				<th @onclick="() => SortBy(nameof(AdminUserViewDto.DriverLicenseNumber))">License @SortIcon(nameof(AdminUserViewDto.DriverLicenseNumber))</th>
+				<th>Role(s)</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var user in FilteredUsers)
+			{
+				<tr @onclick="() => SelectUser(user.Id)" style="cursor:pointer" class="@(selectedUserId == user.Id ? "table-primary" : "")">
+					<td>@user.Id</td>
+					<td>@GetFullName(user)</td>
+					<td>@user.Email</td>
+					<td>@user.PhoneNumber</td>
+					<td>@user.DriverLicenseNumber</td>
+					<td>@(string.Join(", ", user.Roles))</td>
+					<td>
+						<button class="btn btn-sm btn-outline-primary" @onclick:stopPropagation="true" @onclick="() => SelectUser(user.Id)">Details</button>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
+
+@code {
+	// --- State Variables ---
+	private List<AdminUserViewDto> userList = new();
+	private string SearchTerm { get; set; } = string.Empty;
+	private string sortColumn = nameof(AdminUserViewDto.Id);
+	private bool sortAscending = true;
+	private string selectedUserId;
+	private bool IsLoading = true;
+	private string ErrorMessage = string.Empty;
+
+
+	private string GetFullName(AdminUserViewDto user)
+	{
+		return $"{user.FirstName} {user.LastName}";
+	}
+	// NOTE: If you don't use the separate <UserDetails> component, you would need
+	// private AdminUserViewDto SelectedUser = null;
+	// private List<RentalViewDto> SelectedUserRentals = new();
+
+	protected override async Task OnInitializedAsync()
+	{
+		await ReloadUsers(null);
+	}
+
+	// --- Filtering and Sorting Property ---
+	private IEnumerable<AdminUserViewDto> FilteredUsers
+	{
+		get
+		{
+			var query = userList.AsEnumerable();
+
+			if (!string.IsNullOrWhiteSpace(SearchTerm))
+			{
+				query = query.Where(u =>
+					(u.FirstName?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+					(u.LastName?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+					(u.Email?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+					(u.DriverLicenseNumber?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+					(u.PhoneNumber?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false));
+				}
+
+			query = sortAscending
+				? query.OrderBy(u => GetPropertyValue(u, sortColumn))
+				: query.OrderByDescending(u => GetPropertyValue(u, sortColumn));
+
+			return query.ToList();
+		}
+	}
+
+	// --- Action Methods ---
+
+	private void SortBy(string columnName)
+	{
+		if (sortColumn == columnName)
+		{
+			sortAscending = !sortAscending;
+		}
+		else
+		{
+			sortColumn = columnName;
+			sortAscending = true;
+		}
+	}
+
+	private object GetPropertyValue(AdminUserViewDto user, string propertyName)
+	{
+		// Use reflection to get property value for sorting
+		return typeof(AdminUserViewDto).GetProperty(propertyName)?.GetValue(user) ?? "";
+	}
+
+	private RenderFragment SortIcon(string columnName) => builder =>
+	{
+		if (sortColumn == columnName)
+		{
+			var icon = sortAscending ? "▲" : "▼";
+			builder.AddContent(0, $" {icon}");
+		}
+	};
+
+	private void SelectUser(string id)
+	{
+		selectedUserId = id;
+	}
+
+	private async Task ReloadUsers(string userId)
+	{
+		IsLoading = true;
+
+		try
+		{
+			userList = await AdminService.GetAllUsersAsync();
+			ErrorMessage = string.Empty;
+		}
+		catch (Exception ex)
+		{
+			ErrorMessage = $"Failed to reload users: {ex.Message}";
+		}
+		finally
+		{
+			IsLoading = false;
+		}
+
+		selectedUserId = userId;
+	}
+
+
+	private void ClearSelection()
+	{
+		selectedUserId = null;
+		SearchTerm = string.Empty;
+	}
+}

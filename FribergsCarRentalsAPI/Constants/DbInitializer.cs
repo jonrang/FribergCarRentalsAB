@@ -53,6 +53,7 @@ namespace FribergCarRentalsAPI.Constants
                         Email = AdminUserEmail,
                         FirstName = "System",
                         LastName = "Admin",
+                        DateOfBirth = new DateTime(1980, 1, 1),
                         EmailConfirmed = true
                     };
 

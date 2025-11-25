@@ -87,7 +87,7 @@ namespace FribergCarRentalsAPI.Controllers
 
                 return BadRequest(new { Message = error });
             }
-
+            return Ok(); // think standard is actually no content here
             return NoContent(); 
         }
 
@@ -126,7 +126,7 @@ namespace FribergCarRentalsAPI.Controllers
                 if (error!.Contains("not found")) return NotFound(new { Message = error });
                 return BadRequest(new { Message = error });
             }
-
+            return Ok(); // think standard is actually no content here
             return NoContent();
         }
 
@@ -134,9 +134,9 @@ namespace FribergCarRentalsAPI.Controllers
         // GET /api/rentals/admin (Get all rentals)
         [HttpGet("admin")]
         [Authorize(Roles = ApiRoles.Administrator)]
-        public async Task<ActionResult<IEnumerable<RentalViewDto>>> GetAllRentalsAdmin()
+        public async Task<ActionResult<IEnumerable<RentalViewDto>>> GetAllRentalsAdmin(string id)
         {
-            var rentals = await rentalService.GetAllRentalsAsync();
+            var rentals = await rentalService.GetUserRentalsAsync(id);
             return Ok(rentals);
         }
 

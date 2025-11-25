@@ -51,16 +51,14 @@ namespace FribergCarRentalsABClient.Services.Base
 
                 if (!string.IsNullOrEmpty(refreshToken))
                 {
-                    var newAccessToken = tokenRefresher.RefreshTokensAsync(refreshToken).Result;
+                    var newAccessToken = await tokenRefresher.RefreshTokensAsync();
 
-                    if (!string.IsNullOrEmpty(newAccessToken))
+                    if (string.IsNullOrEmpty(newAccessToken))
                     {
-                        token = newAccessToken.ToString();
-                    }
-                    else
-                    {
+                        await tokenRefresher.Logout();
                         return;
                     }
+                    token = newAccessToken.ToString();
                 }
             }
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -70,8 +68,21 @@ namespace FribergCarRentalsABClient.Services.Base
         {
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-
                 var tokenRefresher = serviceProvider.GetRequiredService<ITokenRefresher>();
+                //var refreshToken = await localStorage.GetItemAsStringAsync("refreshToken");
+                //if (!string.IsNullOrEmpty(refreshToken))
+                //{
+                //    try
+                //    {
+                //        var token = await tokenRefresher.RefreshTokensAsync();
+                //        return;
+                //    }
+                //    catch (Exception)
+                //    {
+                //        return;
+                //    }
+
+                //}
                 await tokenRefresher.Logout();
             }
 

@@ -20,6 +20,7 @@ namespace FribergCarRentalsAPI.Controllers
             this.authService = authService;
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [Route("register")]
         public async Task<ActionResult<Response<string>>> Register([FromBody] RegisterUserDto userDto)
@@ -101,6 +102,7 @@ namespace FribergCarRentalsAPI.Controllers
             return BadRequest(new { Message = errorMessage });
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [Route("login")]
         public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginUserDto userDto)

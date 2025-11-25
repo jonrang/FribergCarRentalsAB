@@ -9,7 +9,7 @@ namespace FribergCarRentalsABClient.Services.Admin
         Task<bool> EditUserAsync(string userId, AdminProfileUpdateDto updateDto);
         Task<List<AdminUserViewDto>> GetAllUsersAsync();
         Task<AdminUserViewDto?> GetUserByIdAsync(string userId);
-        Task<List<RentalViewDto>> GetAllRentalsAsync();
+        Task<List<RentalViewDto>> GetAllRentalsAsync(string id);
         Task<bool> ActivateRentalAsync(int id);
         Task<double?> CompleteRentalAsync(int id);
         Task<RentalViewDto?> GetRentalByIdAsync(int id);

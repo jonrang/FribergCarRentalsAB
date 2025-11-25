@@ -245,12 +245,12 @@ namespace FribergCarRentalsABClient.Services.Base
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<RentalViewDto>> AdminAsync();
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<RentalViewDto>> AdminAsync(string id);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<RentalViewDto>> AdminAsync(System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<RentalViewDto>> AdminAsync(string id, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
@@ -2263,15 +2263,15 @@ namespace FribergCarRentalsABClient.Services.Base
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<RentalViewDto>> AdminAsync()
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<RentalViewDto>> AdminAsync(string id)
         {
-            return AdminAsync(System.Threading.CancellationToken.None);
+            return AdminAsync(id, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<RentalViewDto>> AdminAsync(System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<RentalViewDto>> AdminAsync(string id, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -2286,6 +2286,12 @@ namespace FribergCarRentalsABClient.Services.Base
                 
                     // Operation Path: "api/Rentals/admin"
                     urlBuilder_.Append("api/Rentals/admin");
+                    urlBuilder_.Append('?');
+                    if (id != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("id")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    urlBuilder_.Length--;
 
                     await PrepareRequestAsync(client_, request_, urlBuilder_, cancellationToken).ConfigureAwait(false);
 
@@ -2972,6 +2978,12 @@ namespace FribergCarRentalsABClient.Services.Base
 
         [Newtonsoft.Json.JsonProperty("carId", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public int CarId { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("carModelId", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int CarModelId { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("licensePlate", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string LicensePlate { get; set; }
 
         [Newtonsoft.Json.JsonProperty("licensePlateSnippet", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string LicensePlateSnippet { get; set; }

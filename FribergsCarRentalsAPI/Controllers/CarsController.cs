@@ -66,7 +66,7 @@ namespace FribergCarRentalsAPI.Controllers
                 return Conflict(new { Message = error });
             }
 
-            return StatusCode(201);
+            return Ok();
         }
 
         // PUT /api/cars/admin/types/{id}
@@ -83,6 +83,7 @@ namespace FribergCarRentalsAPI.Controllers
 
                 return Problem(error, statusCode: 500);
             }
+            return Ok(); // think standard is actually no content here
             return NoContent();
         }
 
@@ -100,7 +101,7 @@ namespace FribergCarRentalsAPI.Controllers
 
                 return Problem(error, statusCode: 500);
             }
-            return StatusCode(201);
+            return Ok();
         }
 
         // PUT /api/cars/admin/inventory/{id}
@@ -118,6 +119,7 @@ namespace FribergCarRentalsAPI.Controllers
 
                 return Problem(error, statusCode: 500);
             }
+            return Ok(); // think standard is actually no content here
             return NoContent();
         }
 
@@ -132,6 +134,7 @@ namespace FribergCarRentalsAPI.Controllers
             {
                 return Conflict(new { Message = error });
             }
+            return Ok(); // think standard is actually no content here
             return NoContent();
         }
 
@@ -146,6 +149,7 @@ namespace FribergCarRentalsAPI.Controllers
             {
                 return Conflict(new { Message = error });
             }
+            return Ok(); // think standard is actually no content here
             return NoContent();
         }
 

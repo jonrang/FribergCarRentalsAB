@@ -1,0 +1,306 @@
+﻿@using FribergCarRentalsABClient.Services.Admin
+@using FribergCarRentalsABClient.Services.Base
+@inject IAdminService AdminService
+@inject NavigationManager NavManager
+@inject IJSRuntime JSRuntime
+
+@if (IsLoading)
+{
+    <p>Loading user details...</p>
+}
+else if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="alert alert-danger">@ErrorMessage</div>
+}
+else if (User != null)
+{
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">User: @User.FirstName @User.LastName (@User.Email)</h4>
+        </div>
+        <div class="card-body">
+
+            @if (!string.IsNullOrEmpty(SuccessMessage))
+            {
+                <div class="alert alert-success">@SuccessMessage</div>
+            }
+
+            @if (IsEditing)
+            {
+                <EditForm Model="@EditModel" OnValidSubmit="HandleUserUpdate">
+                    <DataAnnotationsValidator />
+                    <div class="row">
+                        <div class="col-md-6 mb-3"><label>First Name</label><InputText @bind-Value="EditModel.FirstName" class="form-control" /></div>
+                        <div class="col-md-6 mb-3"><label>Last Name</label><InputText @bind-Value="EditModel.LastName" class="form-control" /></div>
+                        <div class="col-md-6 mb-3"><label>Email</label><p class="form-control-plaintext">@User.Email</p></div>
+                        <div class="col-md-6 mb-3"><label>Phone Number</label><InputText @bind-Value="EditModel.PhoneNumber" class="form-control" /></div>
+                        <div class="col-md-6 mb-3"><label>Date of Birth</label><InputDate @bind-Value="EditModel.DateOfBirth" class="form-control" /></div>
+                        <div class="col-md-6 mb-3"><label>Driver's License</label><InputText @bind-Value="EditModel.DriverLicenseNumber" class="form-control" /></div>
+                    </div>
+                    <ValidationSummary />
+                    <button type="submit" class="btn btn-success me-2">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" @onclick="() => IsEditing = false">Cancel</button>
+                </EditForm>
+            }
+            else
+            {
+                <div class="row">
+                    <div class="col-md-6"><p><strong>First Name:</strong> @User.FirstName</p></div>
+                    <div class="col-md-6"><p><strong>Last Name:</strong> @User.LastName</p></div>
+                    <div class="col-md-6"><p><strong>Email:</strong> @User.Email</p></div>
+                    <div class="col-md-6"><p><strong>Phone:</strong> @User.PhoneNumber</p></div>
+                    <div class="col-md-6"><p><strong>Date of Birth:</strong> @(User.DateOfBirth)</p></div>
+                    <div class="col-md-6"><p><strong>License No:</strong> @User.DriverLicenseNumber</p></div>
+                </div>
+                <button class="btn btn-warning me-2" @onclick="StartEditing">Unlock Fields to Edit</button>
+            }
+
+            <hr class="mt-4" />
+
+            <h5 class="mt-3">Role Management</h5>
+            <div class="row mb-3 align-items-end">
+                <div class="col-md-4">
+                    <label>Current Role(s)</label>
+                    <p class="form-control-plaintext">@(string.Join(", ", User.Roles))</p>
+                </div>
+                <div class="col-md-4">
+                    <label for="role-select">Change Role To</label>
+                    <select id="role-select" @bind="SelectedRole" class="form-select">
+                        @foreach (var role in AvailableRoles)
+                        {
+                            <option value="@role">@role</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-info" @onclick="UpdateUserRole">Update Role</button>
+                </div>
+            </div>
+
+            <hr class="mt-4" />
+
+            <h5 class="mt-3 text-danger">Danger Zone</h5>
+            <button class="btn btn-danger" @onclick="DeleteUser">Delete User Account</button>
+
+            <hr class="mt-4" />
+
+            <h5 class="mt-3">Rental History (@Rentals?.Count ?? 0)</h5>
+            @if (Rentals != null && Rentals.Any())
+            {
+                <table class="table table-sm table-bordered mt-3">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Car</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var rental in Rentals)
+                        {
+                            <tr>
+                                <td>@rental.RentalId</td>
+                                <td>@rental.CarDetails</td>
+                                <td>@rental.StartDate</td>
+                                <td>@rental.EndDate</td>
+                                <td><strong>@rental.Status</strong></td>
+                                <td>
+                                    @if (rental.Status.Equals("Active", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <button class="btn btn-sm btn-success" @onclick="() => CompleteRental(rental.RentalId)">Return Car</button>
+                                    }
+                                    @if (rental.Status.Equals("Pending", StringComparison.OrdinalIgnoreCase) || rental.Status.Equals("Inactive", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <button class="btn btn-sm btn-info" @onclick="() => ActivateRental(rental.RentalId)">Activate Rental</button>
+                                    }
+                                    <button class="btn btn-sm btn-warning" @onclick="() => ManageRental(rental.RentalId)">View Details</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>No rental history found for this user.</p>
+            }
+        </div>
+    </div>
+}
+
+
+@code {
+    [Parameter]
+    public string UserId { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnSaved { get; set; }
+
+    private AdminUserViewDto User;
+    private AdminProfileUpdateDto EditModel;
+    private List<RentalViewDto> Rentals;
+    private bool IsLoading = true;
+    private bool IsEditing = false;
+    private string ErrorMessage;
+    private string SuccessMessage;
+    private string SelectedRole;
+    private double? RentalReturnCost;
+
+    private readonly List<string> AvailableRoles = new List<string> { "User", "Administrator", "Suspended" };
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadUserDetailsAsync();
+    }
+
+    private async Task LoadUserDetailsAsync()
+    {
+        IsLoading = true;
+        ErrorMessage = null;
+        SuccessMessage = null;
+        IsEditing = false;
+        RentalReturnCost = null;
+        try
+        {
+            User = await AdminService.GetUserByIdAsync(UserId);
+            Rentals = await AdminService.GetAllRentalsAsync(UserId);
+
+            InitializeEditModel();
+
+            SelectedRole = User.Roles.FirstOrDefault() ?? "Customer";
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to load user details: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void InitializeEditModel()
+    {
+        EditModel = new AdminProfileUpdateDto
+        {
+            FirstName = User.FirstName,
+            LastName = User.LastName,
+            DateOfBirth = User.DateOfBirth,
+            DriverLicenseNumber = User.DriverLicenseNumber,
+            PhoneNumber = User.PhoneNumber
+        };
+        IsEditing = true; 
+    }
+    private void StartEditing()
+    {
+        InitializeEditModel();
+        IsEditing = true;
+    }
+
+    private async Task HandleUserUpdate()
+    {
+        try
+        {
+            var success = await AdminService.EditUserAsync(UserId, EditModel);
+
+            if (success)
+            {
+                SuccessMessage = "User profile updated successfully.";
+                IsEditing = false; 
+                await OnSaved.InvokeAsync(UserId);
+            }
+            else
+            {
+                ErrorMessage = "Failed to update user profile. Check server logs.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Update failed: {ex.Message}";
+        }
+    }
+
+    private async Task UpdateUserRole()
+    {
+        try
+        {
+            await AdminService.ChangeUserRoleAsync(UserId, SelectedRole);
+
+            SuccessMessage = $"User role updated to {SelectedRole}.";
+            await OnSaved.InvokeAsync(UserId);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to change role: {ex.Message}";
+        }
+    }
+
+    private async Task DeleteUser()
+    {
+        if (await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this user? This action cannot be undone."))
+        {
+            try
+            {
+                var success = await AdminService.DeleteUserAsync(UserId);
+
+                if (success)
+                {
+                    // Notify parent to reload list and clear selection
+                    await OnSaved.InvokeAsync(null);
+                }
+                else
+                {
+                    ErrorMessage = "Failed to delete user.";
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Deletion failed: {ex.Message}";
+            }
+        }
+    }
+
+    private async Task CompleteRental(int rentalId)
+    {
+        try
+        {
+            RentalReturnCost = await AdminService.CompleteRentalAsync(rentalId);
+            SuccessMessage = $"Rental #{rentalId} returned. Final cost: ${RentalReturnCost:N2}.";
+
+            await LoadUserDetailsAsync();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to complete rental: {ex.Message}";
+        }
+    }
+
+    private async Task ActivateRental(int rentalId)
+    {
+        try
+        {
+            if (await AdminService.ActivateRentalAsync(rentalId))
+            {
+                SuccessMessage = $"Rental #{rentalId} successfully activated.";
+            }
+            else
+            {
+                ErrorMessage = $"Failed to activate rental #{rentalId}.";
+            }
+
+            await LoadUserDetailsAsync();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error activating rental: {ex.Message}";
+        }
+    }
+
+    private void ManageRental(int rentalId)
+    {
+        NavManager.NavigateTo($"/admin/rentals/{rentalId}");
+    }
+}

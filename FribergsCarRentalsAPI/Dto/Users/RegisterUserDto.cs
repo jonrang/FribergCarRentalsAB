@@ -16,6 +16,6 @@ namespace FribergCarRentalsAPI.Dto.Users
         [RegularExpression(@"^[A-Za-z0-9]{10,20}$", ErrorMessage = "Invalid license format.")]
         public string DriverLicenseNumber { get; set; }
 
-        public string PhoneNumber { get; set; }
+        public string PhoneNumber { get; set; } = string.Empty;
     }
 }

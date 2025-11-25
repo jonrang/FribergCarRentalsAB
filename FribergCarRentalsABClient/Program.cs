@@ -22,10 +22,6 @@ namespace FribergCarRentalsABClient
             builder.RootComponents.Add<App>("#app");
             builder.RootComponents.Add<HeadOutlet>("head::after");
 
-            //builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-            //builder.Configuration.AddJsonFile($"appsettings.{builder.HostEnvironment.Environment}.json", optional: true, reloadOnChange: true);
-            //builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-
             builder.Services.AddBlazoredLocalStorage();
             builder.Services.AddLogging();
 
@@ -44,17 +40,6 @@ namespace FribergCarRentalsABClient
             var apiUrl = builder.Configuration["ApiSettings:BaseUrl"]
              ?? builder.HostEnvironment.BaseAddress;
 
-            //builder.Services.AddHttpClient<ICarRentalsAPIClient, CarRentalsAPIClient>(client =>
-            //{
-            //    client.BaseAddress = new Uri(apiUrl);
-            //});
-
-            //builder.Services.AddHttpClient<HttpClient>(client =>
-            //{
-            //    client.BaseAddress = new Uri(apiUrl);
-            //    // You would typically add the AuthorizationHandler here, 
-            //    // but for now, we keep it simple.
-            //});
 
             builder.Services.AddScoped(sp => new HttpClient
             {
@@ -63,35 +48,17 @@ namespace FribergCarRentalsABClient
 
             builder.Services.AddScoped<ICarRentalsAPIClient, CarRentalsAPIClient>(sp =>
             {
-                // Now, this line should successfully resolve the HttpClient registered above
                 var httpClient = sp.GetRequiredService<HttpClient>();
 
-                // Resolve all other required dependencies
                 var localStorage = sp.GetRequiredService<ILocalStorageService>();
                 var serviceProvider = sp.GetRequiredService<IServiceProvider>();
 
-                // Explicitly call the extended constructor you defined (four arguments)
                 return new CarRentalsAPIClient(
                     httpClient,
                     localStorage,
                     serviceProvider
                 );
             });
-            //builder.Services.AddScoped(sp =>
-            //{
-            //    var httpClient = sp.GetRequiredService<HttpClient>();
-
-            //    var authProvider = sp.GetRequiredService<ApiAuthenticationStateProvider>();
-            //    var localStorage = sp.GetRequiredService<ILocalStorageService>();
-            //    var tokenRefresher = sp.GetRequiredService<ITokenRefresher>();
-
-            //    return new CarRentalsAPIClient(
-            //        httpClient,
-            //        authProvider,
-            //        localStorage,
-            //        tokenRefresher
-            //    );
-            //});
 
 
             await builder.Build().RunAsync();

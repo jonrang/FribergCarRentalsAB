@@ -15,19 +15,28 @@ namespace FribergCarRentalsABClient.Services.Cars
             this.logger = logger;
         }
 
-        public async Task<bool> AddCarInventoryAsync(CarModel car)
+        public async Task<bool> AddCarInventoryAsync(CarCreateDto carDto)
         {
-            var carDto = MapToCarDto(car);
+            var carToMap = new CarModel
+            {
+                CarModelId = carDto.CarModelId,
+                Manufacturer = carDto.Make,
+                Year = carDto.Year,
+                LicensePlate = carDto.LicensePlate,
+                RatePerDay = carDto.RatePerDay,
+                Mileage = carDto.Mileage
+            };
+
+            var finalCarDto = MapToCarDto(carToMap);
 
             try
             {
-                await apiClient.InventoryPOSTAsync(carDto);
+                await apiClient.InventoryPOSTAsync(finalCarDto);
                 return true;
             }
             catch (ApiException ex)
             {
-                logger.LogError(ex, $"Failed to add car inventory for License Plate {car.LicensePlate}. API Status: {ex.StatusCode}",
-            car.LicensePlate, ex.StatusCode);
+                logger.LogError(ex, $"Failed to add car inventory for License Plate {finalCarDto.LicensePlate}. API Status: {ex.StatusCode}");
                 return false;
             }
         }
@@ -107,7 +116,6 @@ namespace FribergCarRentalsABClient.Services.Cars
                 var endDateTimeOffset = new System.DateTimeOffset(endDate.Year, endDate.Month, endDate.Day, 0, 0, 0, System.TimeSpan.Zero);
                 var viewDtos = await apiClient.SearchAsync(startDateTimeOffset, endDateTimeOffset);
 
-                // Map the results (CarViewDto) to your internal CarModel
                 return viewDtos.Select(MapToCarModel).ToList();
             }
             catch (ApiException ex)
@@ -117,7 +125,7 @@ namespace FribergCarRentalsABClient.Services.Cars
             }
         }
 
-        public async Task<CarModel?> GetCarByIdAsync(int id)
+        public async Task<CarModel> GetCarByIdAsync(int id)
         {
             try
             {
@@ -138,13 +146,32 @@ namespace FribergCarRentalsABClient.Services.Cars
             }
         }
 
-        public async Task<bool> UpdateCarInventoryAsync(int id, CarModel car)
+        public async Task<bool> UpdateCarInventoryAsync(int id, CarUpdateDto carDto, int carModelId)
         {
-            var carDto = MapToCarDto(car);
+            var original = await GetCarByIdAsync(id);
+
+            if (original == null)
+            {
+                return false;
+            }
+            var carToMap = new CarModel 
+            {
+                Id = id,
+                CarModelId = carModelId,
+                LicensePlate = carDto.LicensePlate,
+                Year = carDto.Year,
+                RatePerDay = carDto.RatePerDay,
+                Mileage = carDto.Mileage,
+
+                Manufacturer = original.Manufacturer,
+                Name = original.Name,
+                BodyStyle = original.BodyStyle
+            };
+            var finalCarDto = MapToCarDto(carToMap);
 
             try
             {
-                await apiClient.InventoryPUTAsync(id, carDto);
+                await apiClient.InventoryPUTAsync(id, finalCarDto);
                 return true;
             }
             catch (ApiException ex)
@@ -199,8 +226,8 @@ namespace FribergCarRentalsABClient.Services.Cars
                 BodyStyle = viewDto.BodyStyle,
                 ImageFileName = viewDto.ImageFileName,
 
-                LicensePlate = string.Empty,
-                CarModelId = 0,
+                LicensePlate = viewDto.LicensePlate,
+                CarModelId = viewDto.CarModelId,
                 Mileage = 0
             };
         }

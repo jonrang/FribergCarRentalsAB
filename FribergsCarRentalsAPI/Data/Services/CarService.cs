@@ -94,7 +94,7 @@ namespace FribergCarRentalsAPI.Data.Services
         {
             var modelToDelete = await context.CarModels.FindAsync(id);
 
-            if (modelToDelete != null)
+            if (modelToDelete == null)
             {
                 return (false, "Car model not found");
             }
@@ -106,10 +106,18 @@ namespace FribergCarRentalsAPI.Data.Services
                 return (false, $"Cannot delete model; {carsCount} cars are still registered under this model.");
             }
 
-            context.CarModels.Remove(modelToDelete);
-            await context.SaveChangesAsync();
+            try
+            {
+                context.CarModels.Remove(modelToDelete);
 
-            return (true, null);
+                await context.SaveChangesAsync();
+
+                return (true, null);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Error deleting car model: {ex.Message}");
+            }
         }
 
         public async Task<IEnumerable<CarViewDto>> GetAllCarsAsync()
@@ -120,6 +128,8 @@ namespace FribergCarRentalsAPI.Data.Services
                .Select(c => new CarViewDto
                {
                    CarId = c.Id,
+                   CarModelId = c.CarModelId,
+                   LicensePlate = c.LicensePlate,
                    LicensePlateSnippet = c.LicensePlate.Length > 4 ? c.LicensePlate.Substring(c.LicensePlate.Length - 4) : c.LicensePlate,
                    Year = c.Year,
                    RatePerDay = c.RatePerDay,
@@ -164,6 +174,8 @@ namespace FribergCarRentalsAPI.Data.Services
                 .Select(c => new CarViewDto
                 {
                     CarId = c.Id,
+                    CarModelId = c.CarModelId,
+                    LicensePlate = c.LicensePlate,
                     LicensePlateSnippet = c.LicensePlate.Length > 4 ? c.LicensePlate.Substring(c.LicensePlate.Length - 4) : c.LicensePlate,
                     Year = c.Year,
                     RatePerDay = c.RatePerDay,
@@ -192,6 +204,8 @@ namespace FribergCarRentalsAPI.Data.Services
             return new CarViewDto
             {
                 CarId = car.Id,
+                CarModelId = car.CarModelId, 
+                LicensePlate = car.LicensePlate,
                 LicensePlateSnippet = car.LicensePlate.Length > 4 ? car.LicensePlate.Substring(car.LicensePlate.Length - 4) : car.LicensePlate,
                 Year = car.Year,
                 RatePerDay = car.RatePerDay,

@@ -74,6 +74,7 @@ namespace FribergCarRentalsAPI.Controllers
                 }
                 return ValidationProblem(modelStateDictionary);
             }
+            return Ok(); // think standard is actually no content here
             return NoContent();
         }
 
@@ -87,6 +88,7 @@ namespace FribergCarRentalsAPI.Controllers
             {
                 return Problem("Failed to delete user due to a server error.", statusCode: 500);
             }
+            return Ok(); // think standard is actually no content here
             return NoContent();
         }
 
@@ -103,6 +105,7 @@ namespace FribergCarRentalsAPI.Controllers
 
                 return Problem(errors.First().Value.First(), statusCode: 500);
             }
+            return Ok(); // think standard is actually no content here
             return NoContent();
         }
     }

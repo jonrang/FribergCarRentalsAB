@@ -76,7 +76,7 @@ namespace FribergCarRentalsAPI.Controllers
                 }
                 return ValidationProblem(modelStateDictionary);
             }
-
+            return Ok(); // think standard is actually no content here
             return NoContent();
         }
 
@@ -101,7 +101,7 @@ namespace FribergCarRentalsAPI.Controllers
                 }
                 return ValidationProblem(modelStateDictionary);
             }
-
+            return Ok(); // think standard is actually no content here
             return NoContent();
         }
     }

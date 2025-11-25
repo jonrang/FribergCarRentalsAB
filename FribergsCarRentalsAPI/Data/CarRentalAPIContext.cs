@@ -31,6 +31,12 @@ namespace FribergCarRentalsAPI.Data
                     Name = ApiRoles.Administrator,
                     NormalizedName = ApiRoles.Administrator,
                     Id = "e27d61dc-c6ff-4f09-9777-d03cdba1c28f"
+                },
+                new IdentityRole
+                {
+                    Name = ApiRoles.Suspended,
+                    NormalizedName = ApiRoles.Suspended,
+                    Id = "0b281efb-70c5-4751-814a-bb6c0baac936"
                 }
             );
         }

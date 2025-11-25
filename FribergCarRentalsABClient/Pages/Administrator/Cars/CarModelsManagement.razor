@@ -1,0 +1,229 @@
+﻿@page "/admin/carmodels"
+@using FribergCarRentalsABClient.Services.Admin
+@using FribergCarRentalsABClient.Services.Cars
+@attribute [Authorize(Roles = "Administrator")]
+
+@inject IAdminService AdminService
+@inject ICarService carService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavManager
+
+<PageTitle>Car Model Management</PageTitle>
+
+<h3>🚗 Car Model Management</h3>
+<p>Manage the list of car makes, models, body styles, and default images.</p>
+
+<hr />
+
+@* --- Add New / Edit Form Area --- *@
+@if (IsEditing || IsAdding)
+{
+    <div class="card mb-4 p-3 bg-light">
+        <h4>@(IsAdding ? "Add New Car Model" : $"Edit {EditModel.Name}")</h4>
+        <EditForm Model="@EditModel" OnValidSubmit="HandleSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="row">
+                <div class="col-md-6 mb-3"><label>Name</label><InputText @bind-Value="EditModel.Name" class="form-control" /></div>
+                <div class="col-md-6 mb-3"><label>Manufacturer</label><InputText @bind-Value="EditModel.Manufacturer" class="form-control" /></div>
+                <div class="col-md-6 mb-3"><label>Body Style</label><InputText @bind-Value="EditModel.BodyStyle" class="form-control" /></div>
+                <div class="col-md-6 mb-3"><label>Image File Name</label><InputText @bind-Value="EditModel.ImageFileName" class="form-control" /></div>
+            </div>
+
+            <button type="submit" class="btn btn-success me-2">@(IsAdding ? "Create Model" : "Save Changes")</button>
+            <button type="button" class="btn btn-secondary" @onclick="ClearSelection">Cancel</button>
+        </EditForm>
+    </div>
+}
+else
+{
+    <button class="btn btn-primary mb-3" @onclick="StartAdd">Add New Model</button>
+}
+
+@* --- Status Messages --- *@
+@if (!string.IsNullOrEmpty(SuccessMessage))
+{
+    <div class="alert alert-success">@SuccessMessage</div>
+}
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="alert alert-danger">@ErrorMessage</div>
+}
+
+<hr />
+
+@* --- Car Model List --- *@
+@if (IsLoading)
+{
+    <p>Loading car models...</p>
+}
+else if (CarModels.Count == 0)
+{
+    <p>No car models found. Click 'Add New Model' to start.</p>
+}
+else
+{
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Manufacturer</th>
+                <th>Body Style</th>
+                <th>Image File</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var model in CarModels)
+            {
+                <tr>
+                    <td>@model.CarModelId</td>
+                    <td>@model.Name</td>
+                    <td>@model.Manufacturer</td>
+                    <td>@model.BodyStyle</td>
+                    <td>@model.ImageFileName</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning me-2" @onclick="() => StartEdit(model)">Edit</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteModel(model.CarModelId, model.Name)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+@code {
+    // --- State Variables ---
+    private List<CarModel> CarModels = new();
+    private CarModel EditModel = new();
+    private bool IsLoading = true;
+    private bool IsEditing = false;
+    private bool IsAdding = false;
+    private string ErrorMessage = string.Empty;
+    private string SuccessMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCarModelsAsync();
+    }
+
+    // --- Data Loading ---
+    private async Task LoadCarModelsAsync()
+    {
+        IsLoading = true;
+        ErrorMessage = string.Empty;
+        try
+        {
+            CarModels = await carService.GetAllCarModelsAsync();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to load car models: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    // --- Form Management ---
+    private void StartAdd()
+    {
+        EditModel = new CarModel(); // Resets to a blank model
+        IsAdding = true;
+        IsEditing = false;
+        SuccessMessage = string.Empty;
+        ErrorMessage = string.Empty;
+    }
+
+    private void StartEdit(CarModel model)
+    {
+        // Creates a deep copy for editing to avoid modifying the list item directly before saving
+        EditModel = new CarModel
+        {
+            CarModelId = model.CarModelId,
+            Name = model.Name,
+            Manufacturer = model.Manufacturer,
+            BodyStyle = model.BodyStyle,
+            ImageFileName = model.ImageFileName
+        };
+        IsEditing = true;
+        IsAdding = false;
+        SuccessMessage = string.Empty;
+        ErrorMessage = string.Empty;
+    }
+
+    private void ClearSelection()
+    {
+        IsEditing = false;
+        IsAdding = false;
+        EditModel = new CarModel();
+        SuccessMessage = string.Empty;
+        ErrorMessage = string.Empty;
+    }
+
+    // --- CRUD Operations ---
+    private async Task HandleSubmit()
+    {
+        ErrorMessage = string.Empty;
+        SuccessMessage = string.Empty;
+        bool success = false;
+        string action = IsAdding ? "added" : "updated";
+
+        try
+        {
+            if (IsAdding)
+            {
+                // Create a new model
+                success = await carService.AddCarModelAsync(EditModel);
+            }
+            else if (IsEditing)
+            {
+                // Update existing model
+                success = await carService.UpdateCarModelAsync(EditModel.CarModelId, EditModel);
+            }
+
+            if (success)
+            {
+                SuccessMessage = $"Car model '{EditModel.Name}' successfully {action}.";
+                await LoadCarModelsAsync(); // Refresh the list
+                ClearSelection(); // Close the form
+            }
+            else
+            {
+                ErrorMessage = $"Operation failed. Could not {action} the car model.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error during {action}: {ex.Message}";
+        }
+    }
+
+    private async Task DeleteModel(int id, string name)
+    {
+        if (await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this CarModel? This action cannot be undone."))
+        {
+            try
+            {
+                if (await carService.DeleteCarModelAsync(id))
+                {
+                    SuccessMessage = $"Car model '{name}' successfully deleted.";
+                    await LoadCarModelsAsync();
+                    ClearSelection();
+                }
+                else
+                {
+                    ErrorMessage = $"Failed to delete car model '{name}'.";
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Deletion error: {ex.Message}";
+            }
+        }
+    }
+}

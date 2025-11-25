@@ -1,5 +1,139 @@
-﻿<h3>CarList</h3>
+﻿@page "/cars"
+@using System.Globalization
+@using FribergCarRentalsABClient.Models
+@using FribergCarRentalsABClient.Services.Cars
+@attribute [AllowAnonymous]
 
-@code {
+@inject ICarService CarService
+@inject NavigationManager NavManager
 
+<PageTitle>Available Rental Cars</PageTitle>
+
+<h3>Find Your Perfect Rental Car</h3>
+<p>Select your dates and filter by manufacturer or model to see real-time availability and rates.</p>
+
+<hr />
+
+<div class="card p-3 mb-4 bg-light">
+    <div class="row align-items-end">
+
+        <div class="col-md-3 mb-3">
+            <label for="startDate">Start Date</label>
+            <InputDate id="startDate" class="form-control" @bind-Value="StartDate" />
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="endDate">End Date</label>
+            <InputDate id="endDate" class="form-control" @bind-Value="EndDate" />
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <label for="search">Manufacturer or Model</label>
+            <input id="search" type="text" class="form-control" @bind="SearchTerm" @bind:event="oninput" placeholder="e.g., Ford, Sedan, Year" />
+        </div>
+
+        <div class="col-md-2 mb-3">
+            <button class="btn btn-primary w-100" @onclick="FilterCars">Search & Check Availability</button>
+        </div>
+    </div>
+</div>
+
+        @if (IsLoading)
+{
+    <p>Loading available cars...</p>
+}
+else if (FilteredCars.Any())
+{
+    <div class="row">
+        @foreach (var car in FilteredCars)
+        {
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <img src="/img/cars/@car.ImageFileName" class="card-img-top" alt="@car.Manufacturer @car.Name" style="height: 200px; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title">@car.Manufacturer @car.Name (@car.Year)</h5>
+                        <p class="card-text">
+                            <strong>@car.BodyStyle</strong> | Mileage: @car.Mileage km
+                        </p>
+                    </div>
+                    <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+                        <span class="fs-4 fw-bold text-success">$@car.RatePerDay<small class="text-muted fs-6"> / day</small></span>
+                        
+                        @* <button class="btn btn-secondary btn-sm me-2" @onclick="() => NavManager.NavigateTo($"/car/{car.Id}")">View Details</button> *@
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-info">No cars match your criteria. Please try different dates or search terms.</div>
+}
+
+ @code {
+    private List<CarModel> AllCars = new();
+    private List<CarModel> FilteredCars = new();
+    private bool IsLoading = true;
+    private string SearchTerm = string.Empty;
+    
+    private DateOnly StartDate = DateOnly.FromDateTime(DateTime.Today.AddDays(1));
+    private DateOnly EndDate = DateOnly.FromDateTime(DateTime.Today.AddDays(8));
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            AllCars = await CarService.GetAllCarsAsync();
+            
+            FilterCars(); 
+        }
+        catch (Exception)
+        {
+           
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task FilterCars()
+    {
+        IsLoading = true;
+        
+        if (EndDate <= StartDate)
+        {
+             FilteredCars = new();
+             return; 
+        }
+
+        try
+        {
+            List<CarModel> availableByDate = await CarService.GetAvailableCarsAsync(StartDate, EndDate);
+            
+            if (string.IsNullOrWhiteSpace(SearchTerm))
+            {
+                FilteredCars = availableByDate;
+            }
+            else
+            {
+                string searchLower = SearchTerm.ToLowerInvariant();
+                FilteredCars = availableByDate
+                    .Where(car =>
+                        car.Manufacturer.ToLowerInvariant().Contains(searchLower) ||
+                        car.Name.ToLowerInvariant().Contains(searchLower) ||
+                        car.BodyStyle.ToLowerInvariant().Contains(searchLower) ||
+                        car.Year.ToString().Contains(searchLower))
+                    .ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            FilteredCars = new();
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
 }

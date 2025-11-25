@@ -106,11 +106,11 @@ namespace FribergCarRentalsABClient.Services.Admin
             }
         }
 
-        public async Task<List<RentalViewDto>> GetAllRentalsAsync()
+        public async Task<List<RentalViewDto>> GetAllRentalsAsync(string id)
         {
             try
             {
-                var rentals = await apiClient.AdminAsync();
+                var rentals = await apiClient.AdminAsync(id);
 
                 return rentals.ToList();
             }
@@ -156,12 +156,8 @@ namespace FribergCarRentalsABClient.Services.Admin
         {
             try
             {
-                // PUT /api/rentals/{id}/complete (NSwag returns an object with Message and FinalCost on 200 OK)
                 var response = await apiClient.CompleteAsync(id);
 
-                // The returned object has a 'FinalCost' property (e.g., FinalCost: 150.00)
-                // We assume NSwag creates a specific type for this anonymous object.
-                // Let's assume the NSwag generated client method returns the actual DTO object.
                 if (response != null)
                 {
                     return response.Data;
@@ -171,7 +167,6 @@ namespace FribergCarRentalsABClient.Services.Admin
             }
             catch (ApiException ex)
             {
-                // Handles 404 Not Found and 409 Conflict (e.g., already completed)
                 logger.LogError(ex, $"Failed to complete rental {id}. Status: {ex.StatusCode}");
                 return null;
             }

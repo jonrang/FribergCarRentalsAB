@@ -1,0 +1,354 @@
+﻿@page "/admin/inventory"
+@using FribergCarRentalsABClient.Services.Admin
+@using FribergCarRentalsABClient.Services.Base
+@using FribergCarRentalsABClient.Services.Cars
+@attribute [Authorize(Roles = "Administrator")]
+
+@inject IAdminService AdminService
+@inject ICarService CarService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavManager
+
+<PageTitle>Car Inventory Management</PageTitle>
+
+<h3>Car Inventory Management</h3>
+<p>Manage individual car assets (License Plates, Mileage, Year, Rate) and link them to a Model/Type.</p>
+
+<hr />
+
+@if (!string.IsNullOrEmpty(SuccessMessage))
+{
+	<div class="alert alert-success">@SuccessMessage</div>
+}
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+	<div class="alert alert-danger">@ErrorMessage</div>
+}
+
+@if (IsAdding)
+{
+	<div class="card mb-4 p-4 bg-light">
+		<h4>Add New Car</h4>
+		<EditForm Model="@AddModel" OnValidSubmit="HandleAddSubmit">
+			<DataAnnotationsValidator />
+			<ValidationSummary />
+
+			<div class="row">
+				<div class="col-md-6 mb-3">
+					<label>Car Model/Type</label>
+					<InputSelect @bind-Value="AddModel.CarModelId" class="form-select">
+						<option value="0">-- Select Model --</option>
+						@foreach (var model in AllCarModels)
+						{
+							<option value="@model.CarModelId">@model.Manufacturer @model.Name (@model.BodyStyle)</option>
+						}
+					</InputSelect>
+					<ValidationMessage For="@(() => AddModel.CarModelId)" />
+				</div>
+
+				<div class="col-md-6 mb-3">
+					<label>License Plate</label>
+					<InputText @bind-Value="AddModel.LicensePlate" class="form-control" />
+				</div>
+				<div class="col-md-4 mb-3">
+					<label>Year</label>
+					<InputNumber @bind-Value="AddModel.Year" class="form-control" />
+					<ValidationMessage For="@(() => AddModel.Year)" />
+				</div>
+
+				<div class="col-md-4 mb-3">
+					<label>Rate Per Day</label>
+					<InputNumber @bind-Value="AddModel.RatePerDay" class="form-control" />
+					<ValidationMessage For="@(() => AddModel.RatePerDay)" />
+				</div>
+
+				<div class="col-md-4 mb-3">
+					<label>Mileage</label>
+					<InputNumber @bind-Value="AddModel.Mileage" class="form-control" />
+					<ValidationMessage For="@(() => AddModel.Mileage)" />
+				</div>
+			</div>
+
+			<button type="submit" class="btn btn-success me-2">Add Car</button>
+			<button type="button" class="btn btn-secondary" @onclick="ClearSelection">Cancel</button>
+		</EditForm>
+	</div>
+}
+else if (IsEditing)
+{
+	<div class="card mb-4 p-4 bg-light">
+		<h4>✏️ Edit @UpdateModel.LicensePlate</h4>
+		<EditForm Model="@UpdateModel" OnValidSubmit="HandleUpdateSubmit">
+			<DataAnnotationsValidator />
+			<ValidationSummary />
+
+			<div class="row">
+				<div class="col-md-6 mb-3">
+					<label>Car Model/Type</label>
+					<p class="form-control-plaintext">
+						<strong>@CurrentManufacturerName @CurrentModelName</strong> (@CurrentBodyStyle)
+					</p>
+				</div>
+
+				<div class="col-md-6 mb-3">
+					<label>License Plate</label>
+					<InputText @bind-Value="UpdateModel.LicensePlate" class="form-control" />
+				</div>
+				<div class="col-md-4 mb-3">
+					<label>Year</label>
+					<InputNumber @bind-Value="UpdateModel.Year" class="form-control" />
+					<ValidationMessage For="@(() => UpdateModel.Year)" />
+				</div>
+
+				<div class="col-md-4 mb-3">
+					<label>Rate Per Day</label>
+					<InputNumber @bind-Value="UpdateModel.RatePerDay" class="form-control" />
+					<ValidationMessage For="@(() => UpdateModel.RatePerDay)" />
+				</div>
+
+				<div class="col-md-4 mb-3">
+					<label>Mileage</label>
+					<InputNumber @bind-Value="UpdateModel.Mileage" class="form-control" />
+					<ValidationMessage For="@(() => UpdateModel.Mileage)" />
+				</div>
+
+			</div>
+
+			<button type="submit" class="btn btn-success me-2">Save Changes</button>
+			<button type="button" class="btn btn-secondary" @onclick="ClearSelection">Cancel</button>
+		</EditForm>
+	</div>
+}
+else
+{
+	<button class="btn btn-primary mb-3" @onclick="StartAdd">Add New Inventory Car</button>
+}
+
+<hr />
+
+@if (IsLoading)
+{
+	<p>Loading inventory...</p>
+}
+else
+{
+	<table class="table table-striped table-hover">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>License Plate</th>
+				<th>Model</th>
+				<th>Year</th>
+				<th>Mileage</th>
+				<th>Rate/Day</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var car in Inventory)
+			{
+				<tr>
+					<td>@car.Id</td>
+					<td>@car.LicensePlate</td>
+					<td>@car.Manufacturer @car.Name</td>
+					<td>@car.Year</td>
+					<td>@car.Mileage</td>
+					<td>@car.RatePerDay.ToString("C0")</td>
+					<td>
+						<button class="btn btn-sm btn-warning me-2" @onclick="() => StartEdit(car)">Edit</button>
+						<button class="btn btn-sm btn-danger" @onclick="() => DeleteCar(car.Id, car.LicensePlate)">Delete</button>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
+@code {
+	private Object CurrentFormModel = new CarCreateDto();
+
+	private CarCreateDto AddModel = new();
+	private CarUpdateDto UpdateModel = new();
+
+	private int CurrentCarId;
+	private int CurrentCarModelId;
+	private string CurrentManufacturerName = string.Empty;
+	private string CurrentModelName = string.Empty;
+	private string CurrentBodyStyle = string.Empty;
+
+	private List<CarModel> Inventory = new(); 
+	private List<CarModel> AllCarModels = new(); 
+	private bool IsLoading = true;
+	private bool IsEditing = false;
+	private bool IsAdding = false;
+	private string ErrorMessage = string.Empty;
+	private string SuccessMessage = string.Empty;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await LoadAllDataAsync();
+	}
+
+
+	private async Task LoadAllDataAsync()
+	{
+		IsLoading = true;
+		ErrorMessage = string.Empty;
+		SuccessMessage = string.Empty;
+		try
+		{
+
+			Inventory = await CarService.GetAllCarsAsync();
+
+
+			AllCarModels = await CarService.GetAllCarModelsAsync();
+		}
+		catch (Exception ex)
+		{
+			ErrorMessage = $"Failed to load inventory data: {ex.Message}";
+		}
+		finally
+		{
+			IsLoading = false;
+		}
+	}
+
+
+	private void StartAdd()
+	{
+		AddModel = new CarCreateDto { RatePerDay = 50.0 };
+		IsAdding = true;
+		IsEditing = false;
+		ErrorMessage = string.Empty;
+		SuccessMessage = string.Empty;
+	}
+
+	private void StartEdit(CarModel car)
+	{
+
+		UpdateModel = new CarUpdateDto
+		{
+			LicensePlate = car.LicensePlate,
+			Year = car.Year,
+			RatePerDay = car.RatePerDay,
+			Mileage = car.Mileage
+		};
+
+		CurrentCarId = car.Id;
+		CurrentCarModelId = car.CarModelId;
+		CurrentManufacturerName = car.Manufacturer;
+		CurrentModelName = car.Name;
+		CurrentBodyStyle = car.BodyStyle;
+
+		IsEditing = true;
+		IsAdding = false;
+		ErrorMessage = string.Empty;
+		SuccessMessage = string.Empty;
+		StateHasChanged();
+	}
+
+	private void ClearSelection()
+	{
+		IsEditing = false;
+		IsAdding = false;
+		AddModel = new CarCreateDto();
+		UpdateModel = new CarUpdateDto();
+		ErrorMessage = string.Empty;
+		SuccessMessage = string.Empty;
+	}
+
+	private async Task HandleAddSubmit()
+	{
+		ErrorMessage = string.Empty;
+		SuccessMessage = string.Empty;
+
+		var selectedModelType = AllCarModels.FirstOrDefault(m => m.CarModelId == AddModel.CarModelId);
+		
+		if (string.IsNullOrEmpty(selectedModelType.Manufacturer))
+		{
+			ErrorMessage = "Internal error: Selected car model is missing manufacturer data.";
+			return;
+		}
+		if (selectedModelType == null || AddModel.CarModelId == 0)
+		{
+			ErrorMessage = "Please select a Car Model/Type.";
+			return;
+		}
+
+		AddModel.Make = selectedModelType.Manufacturer;
+
+		try
+		{
+			if (await CarService.AddCarInventoryAsync(AddModel))
+			{
+				SuccessMessage = $"Car with plate '{AddModel.LicensePlate}' successfully added.";
+				await LoadAllDataAsync();
+				ClearSelection();
+			}
+			else
+			{
+				ErrorMessage = "Failed to add car inventory.";
+			}
+		}
+		catch (Exception ex)
+		{
+			ErrorMessage = $"Error during added: {ex.Message}";
+		}
+	}
+
+
+	private async Task HandleUpdateSubmit()
+	{
+		ErrorMessage = string.Empty;
+		SuccessMessage = string.Empty;
+
+		if (CurrentCarId == 0 || CurrentCarModelId == 0)
+		{
+			ErrorMessage = "Internal error: Missing essential ID for update.";
+			return;
+		}
+
+		try
+		{
+			if (await CarService.UpdateCarInventoryAsync(CurrentCarId, UpdateModel, CurrentCarModelId))
+			{
+				SuccessMessage = $"Car with plate '{UpdateModel.LicensePlate}' successfully updated.";
+				await LoadAllDataAsync();
+				ClearSelection();
+			}
+			else
+			{
+				ErrorMessage = "Failed to update car inventory.";
+			}
+		}
+		catch (Exception ex)
+		{
+			ErrorMessage = $"Error during update: {ex.Message}";
+		}
+	}
+
+	private async Task DeleteCar(int id, string licensePlate)
+	{
+
+		if (await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this CarModel? This action cannot be undone."))
+		{
+			try
+			{
+				if (await CarService.DeleteCarInventoryAsync(id))
+				{
+					SuccessMessage = $"Car with plate '{licensePlate}' successfully deleted.";
+					await LoadAllDataAsync();
+					ClearSelection();
+				}
+				else
+				{
+					ErrorMessage = $"Failed to delete car with plate '{licensePlate}'.";
+				}
+			}
+			catch (Exception ex)
+			{
+				ErrorMessage = $"Deletion error: {ex.Message}";
+			}
+		}
+	}
+}

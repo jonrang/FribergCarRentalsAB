@@ -88,12 +88,47 @@
 
 </EditForm>
 
+@if (ShowConfirmationModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Registration Successful!</h5>
+                    @* The button below is often a simple 'X' to close the modal *@
+                    <button type="button" class="btn-close" @onclick="CloseModal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p>@SuccessMessage</p>
+                    <p>Please click the button below to **confirm your email address** and activate your account. You will be redirected to the confirmation page.</p>
+                </div>
+
+                <div class="modal-footer">
+                    <a href="@ConfirmationLink" class="btn btn-primary" target="_blank" @onclick="CloseModal">
+                        Confirm Email
+                    </a>
+
+                    <button type="button" class="btn btn-secondary" @onclick="NavigateToIndex">
+                        Skip for now (Go Home)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Add a backdrop for the modal *@
+    <div class="modal-backdrop fade show"></div>
+}
+
 @code {
 
-    private RegisterUserDto RegistrationModel = new RegisterUserDto() { DateOfBirth = DateTime.Now.AddYears(-20) }; // Default DOB to prevent input error
+    private RegisterUserDto RegistrationModel = new RegisterUserDto() { DateOfBirth = DateTime.Now.AddYears(-20) }; 
     private string ErrorMessage = string.Empty;
     private string SuccessMessage = string.Empty;
     private string? ConfirmationLink = null;
+    private bool ShowConfirmationModal = false;
 
     private Dictionary<string, string[]> ValidationErrors = new Dictionary<string, string[]>();
 
@@ -110,7 +145,7 @@
         {
             SuccessMessage = result.Message;
             ConfirmationLink = result.Data;
-            RegistrationModel = new RegisterUserDto() { DateOfBirth = DateTime.Now.AddYears(-20) };
+            ShowConfirmationModal = true;
         }
         else
         {
@@ -127,10 +162,19 @@
         }
     }
 
-    // Helper to display errors returned by the API that were not caught by client-side DataAnnotations (e.g., email conflict)
+    private void CloseModal()
+    {
+        ShowConfirmationModal = false;
+    }
+
+    private void NavigateToIndex()
+    {
+        ShowConfirmationModal = false;
+        NavManager.NavigateTo("/");
+    }
+
     private RenderFragment DisplayError(string fieldName) => builder =>
     {
-        // Check if the API returned an error for this specific field name
         if (ValidationErrors.TryGetValue(fieldName, out var errors))
         {
             foreach (var error in errors)
