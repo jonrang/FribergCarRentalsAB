@@ -1,0 +1,95 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@attribute [Authorize(Roles = "Administrator")]
+@attribute [Authorize]
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">Car Rentals App</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        
+        @* --- Public Navigation --- *@
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+        
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="cars">
+                <span class="bi bi-car-front-fill-nav-menu" aria-hidden="true"></span> Car Listing
+            </NavLink>
+        </div>
+
+        @* --- Authentication Links (Based on Logged-In Status) --- *@
+        <AuthorizeView>
+            <Authorized>
+                @* Links for Logged-In Users *@
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="profile">
+                        <span class="bi bi-person-circle-nav-menu" aria-hidden="true"></span> Profile
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="profile/rentals">
+                        <span class="bi bi-key-fill-nav-menu" aria-hidden="true"></span> My Rentals
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="logout">
+                        <span class="bi bi-box-arrow-right-nav-menu" aria-hidden="true"></span> Logout
+                    </NavLink>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                @* Links for Anonymous Users *@
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="login">
+                        <span class="bi bi-box-arrow-in-right-nav-menu" aria-hidden="true"></span> Login
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="register">
+                        <span class="bi bi-person-plus-fill-nav-menu" aria-hidden="true"></span> Register
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+        
+        @* --- Admin Links (Role-Based) --- *@
+        <AuthorizeView Roles="Administrator">
+            <div class="nav-item px-3">
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                    <span>ADMINISTRATION</span>
+                </h6>
+                <NavLink class="nav-link" href="admin">
+                    <span class="bi bi-gear-fill me-2" aria-hidden="true"></span> Admin Dashboard
+                </NavLink>
+                <NavLink class="nav-link" href="admin/users">
+                    <span class="bi bi-people-fill-nav-menu" aria-hidden="true"></span> Manage Users
+                </NavLink>
+                <NavLink class="nav-link" href="admin/rentals">
+                    <span class="bi bi-list-check-nav-menu" aria-hidden="true"></span> All Rentals
+                </NavLink>
+            </div>
+        </AuthorizeView>
+
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

@@ -1,0 +1,13 @@
+﻿@page "/logout"
+@using FribergCarRentalsABClient.Services.Authentication
+@inject IAuthenticationService AuthService
+@inject NavigationManager NavManager
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthService.Logout();
+
+        NavManager.NavigateTo("/", forceLoad: true);
+    }
+}

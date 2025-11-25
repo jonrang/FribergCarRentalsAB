@@ -1,0 +1,189 @@
+﻿@page "/register"
+@using FribergCarRentalsABClient.Services.Authentication
+@using System.ComponentModel.DataAnnotations
+@using FribergCarRentalsABClient.Services.Base
+@inject IAuthenticationService AuthService
+@inject NavigationManager NavManager
+
+<h3>Create a New Account</h3>
+
+<EditForm Model="@RegistrationModel" OnValidSubmit="@HandleRegistration">
+    <DataAnnotationsValidator />
+
+    <h4>Personal Information</h4>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-6 form-group mb-3">
+            <label>First Name <span class="text-danger">*</span></label>
+            <InputText class="form-control" @bind-Value="RegistrationModel.FirstName" placeholder="Jane" />
+            <ValidationMessage For="@(() => RegistrationModel.FirstName)" />
+            @DisplayError("FirstName")
+        </div>
+        <div class="col-md-6 form-group mb-3">
+            <label>Last Name <span class="text-danger">*</span></label>
+            <InputText class="form-control" @bind-Value="RegistrationModel.LastName" placeholder="Doe" />
+            <ValidationMessage For="@(() => RegistrationModel.LastName)" />
+            @DisplayError("LastName")
+        </div>
+    </div>
+
+    <div class="form-group mb-3">
+        <label>Date of Birth <span class="text-danger">*</span></label>
+        <InputDate class="form-control" @bind-Value="RegistrationModel.DateOfBirth" />
+        <ValidationMessage For="@(() => RegistrationModel.DateOfBirth)" />
+        @DisplayError("DateOfBirth")
+    </div>
+
+    <div class="form-group mb-3">
+        <label>Phone Number</label>
+        <InputText class="form-control" @bind-Value="RegistrationModel.PhoneNumber" placeholder="Optional" />
+        <ValidationMessage For="@(() => RegistrationModel.PhoneNumber)" />
+        @DisplayError("PhoneNumber")
+    </div>
+
+    <div class="form-group mb-4">
+        <label>Driver's License Number <span class="text-danger">*</span></label>
+        <InputText class="form-control" @bind-Value="RegistrationModel.DriverLicenseNumber" />
+        <ValidationMessage For="@(() => RegistrationModel.DriverLicenseNumber)" />
+        @DisplayError("DriverLicenseNumber")
+        <small class="form-text text-muted">Must be 10-20 alphanumeric characters.</small>
+    </div>
+
+    <h4>Account Credentials</h4>
+    <hr />
+
+    <div class="form-group mb-3">
+        <label>Email <span class="text-danger">*</span></label>
+        <InputText class="form-control" @bind-Value="RegistrationModel.Email" placeholder="you@example.com" />
+        <ValidationMessage For="@(() => RegistrationModel.Email)" />
+        @DisplayError("Email")
+    </div>
+
+    <div class="form-group mb-4">
+        <label>Password <span class="text-danger">*</span></label>
+        <InputText class="form-control" @bind-Value="RegistrationModel.Password" type="password" />
+        <ValidationMessage For="@(() => RegistrationModel.Password)" />
+        @DisplayError("Password")
+        <small class="form-text text-muted">Must be at least 6 characters long.</small>
+    </div>
+
+    <button type="submit" class="btn btn-lg btn-success w-100">Register Account</button>
+
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="alert alert-danger mt-3">@ErrorMessage</div>
+    }
+    @if (!string.IsNullOrEmpty(SuccessMessage))
+    {
+        <div class="alert alert-success mt-3">
+            <p>**Registration Successful!**</p>
+            <p>@SuccessMessage</p>
+            @if (!string.IsNullOrEmpty(ConfirmationLink))
+            {
+                <p>Confirmation Link: <a href="@ConfirmationLink">Click to Activate</a> (For testing only)</p>
+            }
+        </div>
+    }
+
+</EditForm>
+
+@if (ShowConfirmationModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Registration Successful!</h5>
+                    @* The button below is often a simple 'X' to close the modal *@
+                    <button type="button" class="btn-close" @onclick="CloseModal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p>@SuccessMessage</p>
+                    <p>Please click the button below to **confirm your email address** and activate your account. You will be redirected to the confirmation page.</p>
+                </div>
+
+                <div class="modal-footer">
+                    <a href="@ConfirmationLink" class="btn btn-primary" target="_blank" @onclick="CloseModal">
+                        Confirm Email
+                    </a>
+
+                    <button type="button" class="btn btn-secondary" @onclick="NavigateToIndex">
+                        Skip for now (Go Home)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Add a backdrop for the modal *@
+    <div class="modal-backdrop fade show"></div>
+}
+
+@code {
+
+    private RegisterUserDto RegistrationModel = new RegisterUserDto() { DateOfBirth = DateTime.Now.AddYears(-20) }; 
+    private string ErrorMessage = string.Empty;
+    private string SuccessMessage = string.Empty;
+    private string? ConfirmationLink = null;
+    private bool ShowConfirmationModal = false;
+
+    private Dictionary<string, string[]> ValidationErrors = new Dictionary<string, string[]>();
+
+    private async Task HandleRegistration()
+    {
+        ErrorMessage = string.Empty;
+        SuccessMessage = string.Empty;
+        ValidationErrors.Clear();
+        ConfirmationLink = null;
+
+        var result = await AuthService.Register(RegistrationModel);
+
+        if (result.Success)
+        {
+            SuccessMessage = result.Message;
+            ConfirmationLink = result.Data;
+            ShowConfirmationModal = true;
+        }
+        else
+        {
+            ErrorMessage = result.Message;
+
+            // Populate ValidationErrors for fields that failed server-side checks
+            // if (result.ValidationErrors != null)
+            // {
+            //     ValidationErrors = result.ValidationErrors.ToDictionary(
+            //         kvp => kvp.Key,
+            //         kvp => kvp.Value
+            //     );
+            // }
+        }
+    }
+
+    private void CloseModal()
+    {
+        ShowConfirmationModal = false;
+    }
+
+    private void NavigateToIndex()
+    {
+        ShowConfirmationModal = false;
+        NavManager.NavigateTo("/");
+    }
+
+    private RenderFragment DisplayError(string fieldName) => builder =>
+    {
+        if (ValidationErrors.TryGetValue(fieldName, out var errors))
+        {
+            foreach (var error in errors)
+            {
+                builder.OpenElement(0, "div");
+                builder.AddAttribute(1, "class", "text-danger small");
+                builder.AddContent(2, error);
+                builder.CloseElement();
+            }
+        }
+    };
+}

@@ -1,0 +1,16 @@
+﻿namespace FribergCarRentalsAPI.Dto.Cars
+{
+    public class CarViewDto
+    {
+        public int CarId { get; set; }
+        public int CarModelId { get; set; }
+        public string LicensePlate { get; set; }
+        public string LicensePlateSnippet { get; set; } 
+        public int Year { get; set; }
+        public decimal RatePerDay { get; set; }
+        public string ModelName { get; set; }
+        public string Manufacturer { get; set; }
+        public string BodyStyle { get; set; }
+        public string ImageFileName { get; set; }
+    }
+}

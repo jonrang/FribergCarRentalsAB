@@ -1,0 +1,151 @@
+﻿@page "/car/{Id:int}"
+@using System.Globalization
+@using FribergCarRentalsABClient.Models
+@using FribergCarRentalsABClient.Providers
+@using FribergCarRentalsABClient.Services.Base
+@using FribergCarRentalsABClient.Services.Cars
+@using FribergCarRentalsABClient.Services.Rental
+@attribute [AllowAnonymous]
+
+@inject ICarService CarService
+@inject IRentalService RentalService
+@inject NavigationManager NavManager
+@inject IConfiguration Configuration 
+
+<PageTitle>Car Details</PageTitle>
+
+@if (Car == null && !IsLoading)
+{
+    <div class="alert alert-warning">Sorry, we couldn't find a car with ID @Id.</div>
+}
+else if (Car != null)
+{
+    <h3>@Car.Manufacturer @Car.Name (@Car.Year)</h3>
+    <hr />
+    
+    <div class="row">
+        
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-3">
+                <img src="images/cars/@Car.ImageFileName" class="card-img-top" alt="@Car.Manufacturer @Car.Name" style="max-height: 400px; object-fit: cover;">
+                <div class="card-body">
+                    <h5 class="card-title text-success">$@Car.RatePerDay <small class="text-muted">/ day</small></h5>
+                    
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Body Style:</strong> @Car.BodyStyle</li>
+                        <li class="list-group-item"><strong>Year:</strong> @Car.Year</li>
+                        <li class="list-group-item"><strong>Mileage:</strong> @Car.Mileage km</li>
+                        <li class="list-group-item"><strong>License Plate:</strong> @Car.LicensePlateSnippet</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <AuthorizeView>
+                <Authorized>
+                    <h4>Rent This Car</h4>
+                    <p>Enter your desired rental dates below.</p>
+                    <hr />
+                    
+                    <EditForm Model="@RentalModel" OnValidSubmit="HandleRentSubmit">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <div class="mb-3">
+                            <label for="startDate">Start Date</label>
+                            <InputDate id="startDate" class="form-control" @bind-Value="RentalModel.StartDate" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="endDate">End Date</label>
+                            <InputDate id="endDate" class="form-control" @bind-Value="RentalModel.EndDate" />
+                        </div>
+
+                        <button type="submit" class="btn btn-lg btn-primary w-100 mt-3">Book Now</button>
+                    </EditForm>
+                </Authorized>
+                <NotAuthorized>
+                    <div class="alert alert-info">
+                        To rent this car, please <a href="/login">log in</a> or <a href="/register">register</a> an account.
+                    </div>
+                </NotAuthorized>
+            </AuthorizeView>
+            
+            @if (!string.IsNullOrEmpty(ResultMessage))
+            {
+                <div class="alert @(IsSuccess ? "alert-success" : "alert-danger") mt-3">@ResultMessage</div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private CarModel Car;
+    private bool IsLoading = true;
+    private string ResultMessage = string.Empty;
+    private bool IsSuccess = false;
+
+    private CreateRentalDto RentalModel = new();
+
+   
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Car = await CarService.GetCarByIdAsync(Id);
+
+            if (Car != null)
+            {
+                RentalModel.CarId = Car.Id;
+                RentalModel.StartDate = DateTime.Today.AddDays(1);
+                RentalModel.EndDate = DateTime.Today.AddDays(8);
+
+            }
+        }
+        catch (Exception)
+        {
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task HandleRentSubmit()
+    {
+        ResultMessage = string.Empty;
+
+        if (RentalModel.EndDate <= RentalModel.StartDate)
+        {
+            IsSuccess = false;
+            ResultMessage = "End Date must be after the Start Date.";
+            return;
+        }
+
+        try
+        {
+            RentalCreationResult result = await RentalService.CreateRentalAsync(RentalModel);
+
+            if (result.Success)
+            {
+                IsSuccess = true;
+                ResultMessage = result.Message;
+
+            }
+            else
+            {
+                IsSuccess = false;
+                ResultMessage = result.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            IsSuccess = false;
+            ResultMessage = $"A critical error occurred during booking: {ex.Message}";
+        }
+    }
+}

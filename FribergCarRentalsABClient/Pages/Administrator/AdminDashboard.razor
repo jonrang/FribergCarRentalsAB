@@ -1,0 +1,58 @@
+﻿@page "/admin"
+@attribute [Authorize(Roles = "Administrator")]
+@layout MainLayout
+
+<div class="container mt-4">
+    <h3 class="mb-4">Admin Dashboard</h3>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+
+        @* Card for Car Models *@
+        <div class="col">
+            <div class="card h-100 shadow-sm text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Car Models</h5>
+                    <p class="card-text">Manage definitions for car makes and models.</p>
+                    <a href="/admin/carmodels" class="btn btn-primary">Go to Models</a>
+                </div>
+            </div>
+        </div>
+
+        @* Card for Inventory (Individual Cars) *@
+        <div class="col">
+            <div class="card h-100 shadow-sm text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Inventory (Cars)</h5>
+                    <p class="card-text">View and manage individual vehicles in stock.</p>
+                    <a href="/admin/inventory" class="btn btn-primary">Go to Inventory</a>
+                </div>
+            </div>
+        </div>
+
+        @* Card for Rentals *@
+        <div class="col">
+            <div class="card h-100 shadow-sm text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Rentals</h5>
+                    <p class="card-text">Review, approve, and finalize rental bookings.</p>
+                    <a href="/admin/rentals" class="btn btn-primary">Go to Rentals</a>
+                </div>
+            </div>
+        </div>
+
+        @* Card for Users *@
+        <div class="col">
+            <div class="card h-100 shadow-sm text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Users</h5>
+                    <p class="card-text">Manage user accounts and role assignments.</p>
+                    <a href="/admin/users" class="btn btn-primary">Go to Users</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@code {
+}
