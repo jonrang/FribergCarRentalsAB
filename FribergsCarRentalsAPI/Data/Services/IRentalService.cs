@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using FribergCarRentalsAPI.Dto.Rentals;
+﻿using FribergCarRentalsAPI.Dto.Rentals;
 
 namespace FribergCarRentalsAPI.Data.Services
 {

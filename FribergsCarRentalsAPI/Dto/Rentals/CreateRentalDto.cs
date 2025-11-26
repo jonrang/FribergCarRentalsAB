@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace FribergCarRentalsAPI.Dto.Rentals
+﻿namespace FribergCarRentalsAPI.Dto.Rentals
 {
     public class CreateRentalDto
     {

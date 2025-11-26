@@ -1,15 +1,6 @@
-
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using FribergCarRentalsAPI.Constants;
 using FribergCarRentalsAPI.Data;
 using FribergCarRentalsAPI.Data.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi;
 
 namespace FribergCarRentalsAPI
 {

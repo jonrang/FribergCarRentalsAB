@@ -1,9 +1,4 @@
-﻿using System;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using FribergCarRentalsAPI.Data;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+﻿using FribergCarRentalsAPI.Data;
 
 namespace FribergCarRentalsAPI.Constants
 {

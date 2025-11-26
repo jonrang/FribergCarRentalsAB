@@ -154,7 +154,7 @@ namespace FribergCarRentalsABClient.Services.Cars
             {
                 return false;
             }
-            var carToMap = new CarModel 
+            var carToMap = new CarModel
             {
                 Id = id,
                 CarModelId = carModelId,

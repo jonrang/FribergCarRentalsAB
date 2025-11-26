@@ -2,10 +2,6 @@
 using FribergCarRentalsAPI.Data.Services;
 using FribergCarRentalsAPI.Dto;
 using FribergCarRentalsAPI.Dto.Users;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting;
 
 namespace FribergCarRentalsAPI.Controllers
 {
@@ -37,7 +33,7 @@ namespace FribergCarRentalsAPI.Controllers
                     var confirmationLink = $"{scheme}://{host}/api/auth/confirm-email?userId={userId}&token={Uri.EscapeDataString(token)}";
 
                     return Ok(new Response<string>
-                    {  
+                    {
                         Success = true,
                         Message = "Registration successful. Please confirm your email.",
                         Data = confirmationLink

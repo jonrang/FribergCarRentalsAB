@@ -1,9 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using Blazored.LocalStorage;
-using Microsoft.AspNetCore.Components.Authorization;
-
-namespace FribergCarRentalsABClient.Providers
+﻿namespace FribergCarRentalsABClient.Providers
 {
     public class ApiAuthenticationStateProvider : AuthenticationStateProvider
     {

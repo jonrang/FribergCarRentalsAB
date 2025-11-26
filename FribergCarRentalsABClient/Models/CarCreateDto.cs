@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace FribergCarRentalsABClient.Models
+﻿namespace FribergCarRentalsABClient.Models
 {
     public class CarCreateDto
     {

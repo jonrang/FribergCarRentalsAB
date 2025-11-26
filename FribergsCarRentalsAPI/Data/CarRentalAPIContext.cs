@@ -1,7 +1,4 @@
 ﻿using FribergCarRentalsAPI.Constants;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
 
 namespace FribergCarRentalsAPI.Data
 {
@@ -10,7 +7,7 @@ namespace FribergCarRentalsAPI.Data
         public DbSet<Car> Cars { get; set; }
         public DbSet<CarModel> CarModels { get; set; }
         public DbSet<Rental> Rentals { get; set; }
-        public CarRentalAPIContext(DbContextOptions options) 
+        public CarRentalAPIContext(DbContextOptions options)
             : base(options)
         {
         }

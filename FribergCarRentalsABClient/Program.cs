@@ -1,5 +1,3 @@
-using Blazored.LocalStorage;
-using FribergCarRentalsABClient;
 using FribergCarRentalsABClient.Providers;
 using FribergCarRentalsABClient.Services.Admin;
 using FribergCarRentalsABClient.Services.Authentication;
@@ -7,9 +5,6 @@ using FribergCarRentalsABClient.Services.Base;
 using FribergCarRentalsABClient.Services.Cars;
 using FribergCarRentalsABClient.Services.Rental;
 using FribergCarRentalsABClient.Services.Users;
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 namespace FribergCarRentalsABClient
 {
@@ -26,7 +21,7 @@ namespace FribergCarRentalsABClient
 
             builder.Services.AddAuthorizationCore();
             builder.Services.AddScoped<ApiAuthenticationStateProvider>();
-            builder.Services.AddScoped<AuthenticationStateProvider>(sp => 
+            builder.Services.AddScoped<AuthenticationStateProvider>(sp =>
                 sp.GetRequiredService<ApiAuthenticationStateProvider>());
 
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();

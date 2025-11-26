@@ -1,5 +1,4 @@
 ﻿using FribergCarRentalsAPI.Dto.Cars;
-using Microsoft.EntityFrameworkCore;
 
 namespace FribergCarRentalsAPI.Data.Services
 {
@@ -123,7 +122,7 @@ namespace FribergCarRentalsAPI.Data.Services
         public async Task<IEnumerable<CarViewDto>> GetAllCarsAsync()
         {
             var cars = await context.Cars
-                //.Where(c => c.IsAvailable)
+               //.Where(c => c.IsAvailable)
                .Include(c => c.Model)
                .Select(c => new CarViewDto
                {
@@ -204,7 +203,7 @@ namespace FribergCarRentalsAPI.Data.Services
             return new CarViewDto
             {
                 CarId = car.Id,
-                CarModelId = car.CarModelId, 
+                CarModelId = car.CarModelId,
                 LicensePlate = car.LicensePlate,
                 LicensePlateSnippet = car.LicensePlate.Length > 4 ? car.LicensePlate.Substring(car.LicensePlate.Length - 4) : car.LicensePlate,
                 Year = car.Year,

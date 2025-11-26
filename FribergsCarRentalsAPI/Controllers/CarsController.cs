@@ -1,10 +1,6 @@
 ﻿using FribergCarRentalsAPI.Constants;
 using FribergCarRentalsAPI.Data.Services;
 using FribergCarRentalsAPI.Dto.Cars;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting;
 
 namespace FribergCarRentalsAPI.Controllers
 {
@@ -94,7 +90,7 @@ namespace FribergCarRentalsAPI.Controllers
                                     .Select(Path.GetFileName)
                                     .Where(name => name != null)
                                     .ToList();
-            
+
             return Ok(filenames);
         }
 

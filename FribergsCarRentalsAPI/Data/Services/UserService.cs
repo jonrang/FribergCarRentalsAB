@@ -1,7 +1,5 @@
 ﻿using FribergCarRentalsAPI.Constants;
 using FribergCarRentalsAPI.Dto.Users;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
 namespace FribergCarRentalsAPI.Data.Services
 {
@@ -21,11 +19,11 @@ namespace FribergCarRentalsAPI.Data.Services
             var userRoleData = await carRentalAPIContext.Users
                 .Select(u => new
                 {
-                        User = u,
-                        Roles = (from userRole in carRentalAPIContext.UserRoles
-                                join role in carRentalAPIContext.Roles on userRole.RoleId equals role.Id
-                                where userRole.UserId == u.Id
-                                select role.Name).ToList()
+                    User = u,
+                    Roles = (from userRole in carRentalAPIContext.UserRoles
+                             join role in carRentalAPIContext.Roles on userRole.RoleId equals role.Id
+                             where userRole.UserId == u.Id
+                             select role.Name).ToList()
                 })
                 .ToListAsync();
 

@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace FribergCarRentalsAPI.Dto.Users
+﻿namespace FribergCarRentalsAPI.Dto.Users
 {
     public class LoginUserDto
     {

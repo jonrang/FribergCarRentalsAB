@@ -1,5 +1,4 @@
 ﻿using FribergCarRentalsABClient.Models;
-using FribergCarRentalsABClient.Services.Base;
 
 namespace FribergCarRentalsABClient.Services.Cars
 {
