@@ -11,6 +11,12 @@
             "Manufacturer": "Tesla",
             "BodyStyle": "Sedan",
             "ImageFileName": "Black Car.jpg"
+        },
+        {
+            "Name": "F80",
+            "Manufacturer": "Ferrari",
+            "BodyStyle": "2-door coupé",
+            "ImageFileName": "Red Car.jpg"
         }
     ],
     "Cars": [
@@ -21,6 +27,14 @@
             "LicensePlate": "ABC 123",
             "RatePerDay": 350.00,
             "Mileage": 45000
+        },
+        {
+            "ModelName": "F80",
+            "Make": "Ferrari",
+            "Year": 2024,
+            "LicensePlate": "XXX 666",
+            "RatePerDay": 1500.00,
+            "Mileage": 10000
         },
         {
             "ModelName": "Model 3",
@@ -48,7 +62,7 @@
             "LicensePlate": "ABC 123",
             "StartDate": "2025-12-01",
             "EndDate": "2025-12-05",
-            "Status": "Pending",
+            "Status": "0",
             "RateAtTimeOfRental": 350.00
         }
     ]

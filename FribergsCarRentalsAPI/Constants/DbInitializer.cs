@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using FribergCarRentalsAPI.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -86,12 +87,12 @@ namespace FribergCarRentalsAPI.Constants
 
                     if (!context.CarModels.Any() || !context.Cars.Any())
                     {
-                        // 1. Read JSON file
-                        var seedFilePath = Path.Combine(environment.ContentRootPath, "seeddata.json");
+                        var seedFilePath = Path.Combine(environment.ContentRootPath, "Constants", "seeddata.json");
                         var json = await File.ReadAllTextAsync(seedFilePath);
                         var seedData = JsonSerializer.Deserialize<SeedData>(json, new JsonSerializerOptions
                         {
-                            PropertyNameCaseInsensitive = true
+                            PropertyNameCaseInsensitive = true,
+                            Converters = { new JsonStringEnumConverter() }
                         });
 
                         if (seedData == null)
@@ -100,12 +101,10 @@ namespace FribergCarRentalsAPI.Constants
                             return;
                         }
 
-                        // 2. Seed CarModels
                         context.CarModels.AddRange(seedData.CarModels);
                         await context.SaveChangesAsync();
                         logger.LogInformation("Seeded {Count} Car Models.", seedData.CarModels.Count);
 
-                        // 3. Seed Test Users
                         foreach (var userSeed in seedData.TestUsers)
                         {
                             if (await userManager.FindByEmailAsync(userSeed.Email) == null)
@@ -131,7 +130,6 @@ namespace FribergCarRentalsAPI.Constants
                         logger.LogInformation("Seeded {Count} Test Users.", seedData.TestUsers.Count);
 
 
-                        // 4. Seed Cars (Requires linking to CarModel ID)
                         var carModelsMap = context.CarModels.ToDictionary(m => m.Name);
                         foreach (var carSeed in seedData.Cars)
                         {
@@ -155,7 +153,6 @@ namespace FribergCarRentalsAPI.Constants
                         logger.LogInformation("Seeded {Count} Cars.", seedData.Cars.Count);
 
 
-                        // 5. Seed Rentals (Requires linking to User ID and Car ID)
                         var testUser = await userManager.FindByEmailAsync(seedData.Rentals.First().UserEmail);
                         var rentalCar = await context.Cars.FirstOrDefaultAsync(c => c.LicensePlate == seedData.Rentals.First().LicensePlate);
 

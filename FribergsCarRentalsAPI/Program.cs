@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
-//using Microsoft.OpenApi.Models;
 
 namespace FribergCarRentalsAPI
 {
@@ -80,33 +79,6 @@ namespace FribergCarRentalsAPI
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]))
                 };
             });
-
-            //builder.Services.AddSwaggerGen(options =>
-            //{
-            //    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-            //    {
-            //        Name = "Authorization",
-            //        Description = "JWT Authorization header using the Bearer scheme.",
-            //        In = ParameterLocation.Header,
-            //        Type = SecuritySchemeType.Http,
-            //        Scheme = "Bearer"
-            //    });
-
-            //    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-            //    {
-            //        // Key: Reference to the security scheme defined above ('Bearer')
-            //        {
-            //           new OpenApiSecurityScheme
-            //            {
-            //                Reference = new OpenApiReference
-            //               {
-            //                   Type = ReferenceType.SecurityScheme,
-            //                  Id = "Bearer" // Must match the ID used in AddSecurityDefinition
-            //                }
-            //            }
-            //        }  // Value: An empty list for scopes
-            //    });
-            //});
 
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IUserService, UserService>();
