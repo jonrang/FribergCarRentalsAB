@@ -57,8 +57,4 @@
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.0.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\FribergCarRentalsABClient\FribergCarRentalsABClient.csproj" />
-  </ItemGroup>
-
 </Project>
