@@ -18,5 +18,6 @@ namespace FribergCarRentalsABClient.Services.Cars
         Task<bool> UpdateCarInventoryAsync(int id, CarUpdateDto car, int carModelId);
         Task<bool> DeleteCarInventoryAsync(int id);
         Task<List<CarModel>> GetAllCarModelsAsync();
+        Task<List<string>> GetCarImageFilenamesAsync();
     }
 }

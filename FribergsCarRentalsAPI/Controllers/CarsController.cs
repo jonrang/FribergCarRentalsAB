@@ -4,6 +4,7 @@ using FribergCarRentalsAPI.Dto.Cars;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 
 namespace FribergCarRentalsAPI.Controllers
 {
@@ -12,10 +13,12 @@ namespace FribergCarRentalsAPI.Controllers
     public class CarsController : ControllerBase
     {
         private readonly ICarService carService;
+        private readonly IHostEnvironment hostEnvironment;
 
-        public CarsController(ICarService carService)
+        public CarsController(ICarService carService, IHostEnvironment hostEnvironment)
         {
             this.carService = carService;
+            this.hostEnvironment = hostEnvironment;
         }
 
         // GET /api/cars 
@@ -24,6 +27,28 @@ namespace FribergCarRentalsAPI.Controllers
         {
             var cars = await carService.GetAllCarsAsync();
             return Ok(cars);
+        }
+
+        [HttpGet("periods")]
+        public async Task<ActionResult<List<UnavailablePeriodDto>>> GetUnavailablePeriod(
+            int id, [FromQuery] DateOnly startDate, [FromQuery] DateOnly endDate)
+        {
+            if (startDate > endDate)
+            {
+                return BadRequest("Invalid date range specified.");
+            }
+            try
+            {
+                var result = await carService.GetUnavailablePeriodsAsync(id, startDate, endDate);
+                return Ok(result);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
+
         }
 
         // GET /api/cars/search?startDate=...&endDate=...
@@ -52,6 +77,25 @@ namespace FribergCarRentalsAPI.Controllers
             }
 
             return Ok(car);
+        }
+
+        [HttpGet("images")] // e.g., GET /api/cars/images
+        public async Task<ActionResult<List<string>>> GetCarImageFilenames()
+        {
+            var webRootPath = hostEnvironment.ContentRootPath;
+            var imagePath = Path.Combine(webRootPath, "Data", "images", "cars");
+
+            if (!Directory.Exists(imagePath))
+            {
+                return NotFound("Car images directory not found.");
+            }
+
+            var filenames = Directory.GetFiles(imagePath)
+                                    .Select(Path.GetFileName)
+                                    .Where(name => name != null)
+                                    .ToList();
+            
+            return Ok(filenames);
         }
 
         // POST /api/cars/admin/types

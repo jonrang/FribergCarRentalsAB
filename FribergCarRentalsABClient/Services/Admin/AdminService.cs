@@ -34,7 +34,6 @@ namespace FribergCarRentalsABClient.Services.Admin
         {
             try
             {
-                // GET /api/admin/users/{userId}
                 var user = await apiClient.UsersGETAsync(userId);
                 return user;
             }

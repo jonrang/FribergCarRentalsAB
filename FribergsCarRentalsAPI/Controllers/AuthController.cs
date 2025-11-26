@@ -98,7 +98,6 @@ namespace FribergCarRentalsAPI.Controllers
                 return Ok(new { Message = "Email confirmed successfully. You can now log in." });
             }
 
-            // Returns a 400 Bad Request with the generic error message from the service
             return BadRequest(new { Message = errorMessage });
         }
 
@@ -148,7 +147,6 @@ namespace FribergCarRentalsAPI.Controllers
 
                 if (response == null)
                 {
-                    // The service returns null if the token is invalid, used, or expired.
                     return Unauthorized(new { Message = "Invalid or expired refresh token." });
                 }
 

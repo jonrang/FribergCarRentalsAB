@@ -9,7 +9,6 @@
 <EditForm Model="@LoginModel" OnValidSubmit="@HandleLogin">
     <DataAnnotationsValidator />
 
-    @* Form fields for Email and Password *@
     <InputText @bind-Value="LoginModel.Email" placeholder="Email" />
     <InputText @bind-Value="LoginModel.Password" type="password" placeholder="Password" />
 

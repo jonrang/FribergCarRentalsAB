@@ -212,6 +212,20 @@ namespace FribergCarRentalsABClient.Services.Cars
             }
         }
 
+        public async Task<List<string>> GetCarImageFilenamesAsync()
+        {
+            try
+            {
+                var filenames = await apiClient.ImagesAsync();
+                return filenames.ToList();
+            }
+            catch (ApiException ex)
+            {
+                logger.LogError(ex, "Failed to retrieve car image filenames from API.");
+                return new List<string>();
+            }
+        }
+
         private static CarModel MapToCarModel(CarViewDto viewDto)
         {
             return new CarModel

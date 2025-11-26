@@ -96,7 +96,6 @@
 
                 <div class="modal-header">
                     <h5 class="modal-title">Registration Successful!</h5>
-                    @* The button below is often a simple 'X' to close the modal *@
                     <button type="button" class="btn-close" @onclick="CloseModal" aria-label="Close"></button>
                 </div>
 
@@ -118,7 +117,6 @@
         </div>
     </div>
 
-    @* Add a backdrop for the modal *@
     <div class="modal-backdrop fade show"></div>
 }
 
@@ -151,14 +149,6 @@
         {
             ErrorMessage = result.Message;
 
-            // Populate ValidationErrors for fields that failed server-side checks
-            // if (result.ValidationErrors != null)
-            // {
-            //     ValidationErrors = result.ValidationErrors.ToDictionary(
-            //         kvp => kvp.Key,
-            //         kvp => kvp.Value
-            //     );
-            // }
         }
     }
 

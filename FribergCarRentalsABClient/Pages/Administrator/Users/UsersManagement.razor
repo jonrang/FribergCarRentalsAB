@@ -6,16 +6,11 @@
 @inject IAdminService AdminService
 @inject NavigationManager NavManager
 
-@*
-    NOTE: You will need to define/create the components for:
-    <UserForm OnSaved="ReloadUsers" />
-    <UserDetails CustomerId="@selectedUserId" OnSaved="ReloadUsers" />
-*@
-
 <PageTitle>User Management</PageTitle>
 
 <h3>User Management</h3>
 <p>Search, manage, and assign roles to all user accounts.</p>
+<p>Activate bookings when a car is given out, complete bookings when it is returned</p>
 
 <div class="mb-3">
 	<button class="btn btn-secondary" @onclick="ClearSelection">Clear Selection</button>
@@ -24,19 +19,16 @@
 @if (!string.IsNullOrEmpty(selectedUserId))
 {
 	<div class="mt-4">
-		@* This component will display all details, rentals, and role management controls *@
 		<UserDetails UserId="@selectedUserId" OnSaved="ReloadUsers" />
 	</div>
 }
 
-@* --- Search Input --- *@
 <div class="row mb-3 mt-4">
 	<div class="col-md-6">
 		<input type="text" @bind="SearchTerm" @bind:event="oninput" placeholder="Search by name, email, phone, or address..." class="form-control" />
 	</div>
 </div>
 
-@* --- User List Table --- *@
 @if (IsLoading)
 {
 	<p>Loading users...</p>
@@ -80,7 +72,6 @@ else
 
 
 @code {
-	// --- State Variables ---
 	private List<AdminUserViewDto> userList = new();
 	private string SearchTerm { get; set; } = string.Empty;
 	private string sortColumn = nameof(AdminUserViewDto.Id);
@@ -94,16 +85,12 @@ else
 	{
 		return $"{user.FirstName} {user.LastName}";
 	}
-	// NOTE: If you don't use the separate <UserDetails> component, you would need
-	// private AdminUserViewDto SelectedUser = null;
-	// private List<RentalViewDto> SelectedUserRentals = new();
 
 	protected override async Task OnInitializedAsync()
 	{
 		await ReloadUsers(null);
 	}
 
-	// --- Filtering and Sorting Property ---
 	private IEnumerable<AdminUserViewDto> FilteredUsers
 	{
 		get
@@ -113,8 +100,7 @@ else
 			if (!string.IsNullOrWhiteSpace(SearchTerm))
 			{
 				query = query.Where(u =>
-					(u.FirstName?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
-					(u.LastName?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+					GetFullName(u).Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
 					(u.Email?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
 					(u.DriverLicenseNumber?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
 					(u.PhoneNumber?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false));
@@ -128,7 +114,6 @@ else
 		}
 	}
 
-	// --- Action Methods ---
 
 	private void SortBy(string columnName)
 	{
@@ -145,7 +130,6 @@ else
 
 	private object GetPropertyValue(AdminUserViewDto user, string propertyName)
 	{
-		// Use reflection to get property value for sorting
 		return typeof(AdminUserViewDto).GetProperty(propertyName)?.GetValue(user) ?? "";
 	}
 
@@ -174,7 +158,9 @@ else
 		}
 		catch (Exception ex)
 		{
-			ErrorMessage = $"Failed to reload users: {ex.Message}";
+			Console.WriteLine($"Error in ReloadUsers: {ex.Message}");
+			ErrorMessage = $"Failed to load users. Are you sure the Admin API is running? Details: {ex.Message}";
+			userList = new List<AdminUserViewDto>();
 		}
 		finally
 		{

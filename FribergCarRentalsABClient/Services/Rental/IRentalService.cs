@@ -9,5 +9,6 @@ namespace FribergCarRentalsABClient.Services.Rental
 
         Task<RentalCreationResult> CreateRentalAsync(CreateRentalDto rentalDto);
         Task<bool> CancelRentalAsync(int id);
+        Task<List<UnavailablePeriodDto>> GetUnavailablePeriodsAsync(int carId);
     }
 }

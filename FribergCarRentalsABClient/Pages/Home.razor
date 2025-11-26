@@ -1,7 +1,96 @@
 ﻿@page "/"
+@using FribergCarRentalsABClient.Models
+@using FribergCarRentalsABClient.Services.Cars
+@inject ICarService CarService
+@inject NavigationManager NavManager
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Friberg Car Rentals AB - Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="hero-section text-center py-5 bg-light-subtle rounded-3 shadow-lg mb-5">
+    
+    <img src="images/FribergsBilar.png" alt="Friberg Car Rentals AB Logo" class="logo-large mb-4" style="max-height: 150px; width: auto;" />
+    
+    <h1 class="display-4 fw-bold">Your Journey Starts Here.</h1>
+    <p class="lead text-muted">
+        Find the perfect car for your next adventure. Fast, reliable, and always ready.
+    </p>
+    
+    <button class="btn btn-primary btn-lg mt-3" @onclick='() => NavigateToPlace("/cars")'>
+        Browse Our Fleet
+    </button>
+</div>
 
-Welcome to your new app.
+
+<h3>Featured Vehicles</h3>
+<p class="text-muted">Check out some of our most popular and recent additions.</p>
+
+<div class="row showcase-row">
+    @if (IsLoading)
+    {
+        <p>Loading featured cars...</p>
+    }
+    else if (FeaturedCars.Any())
+    {
+        @foreach (var car in FeaturedCars)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm transition-hover">
+                    <img src="images/cars/@car.ImageFileName" class="card-img-top showcase-img" alt="@car.Manufacturer @car.Name">
+                    <div class="card-body">
+                        <h5 class="card-title">@car.Manufacturer @car.Name</h5>
+                        <p class="card-text text-success fw-bold">$@car.RatePerDay <small class="text-muted">/ day</small></p>
+                        <ul class="list-unstyled small">
+                            <li>Year: @car.Year</li>
+                            <li>Style: @car.BodyStyle</li>
+                        </ul>
+                        <button class="btn btn-sm btn-outline-primary w-100" @onclick="() => NavigateToCar(car.Id)">
+                            View Details
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="alert alert-warning">No cars available for the showcase right now.</div>
+    }
+</div>
+
+@code {
+    private List<CarModel> AllCars = new();
+    private List<CarModel> FeaturedCars = new();
+    private bool IsLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFeaturedCarsAsync();
+    }
+
+    private async Task LoadFeaturedCarsAsync()
+    {
+        IsLoading = true;
+        try
+        {
+            AllCars = await CarService.GetAllCarsAsync();
+            
+            FeaturedCars = AllCars.Take(3).ToList(); 
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading cars: {ex.Message}");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+    private void NavigateToPlace(string place)
+    {
+        NavManager.NavigateTo(place);
+    }
+    private void NavigateToCar(int carId)
+    {
+        NavManager.NavigateTo($"/car/{carId}");
+    }
+}
