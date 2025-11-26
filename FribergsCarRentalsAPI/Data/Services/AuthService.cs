@@ -28,7 +28,6 @@ namespace FribergCarRentalsAPI.Data.Services
 
             if (user == null || !await userManager.CheckPasswordAsync(user, userDto.Password))
             {
-                // Do NOT throw an exception here; return null to signal failure.
                 return null;
             }
 
@@ -104,7 +103,6 @@ namespace FribergCarRentalsAPI.Data.Services
             var updateResult = await userManager.UpdateAsync(user);
             if (!updateResult.Succeeded)
             {
-                // Log this error: failed to persist the rotated token.
                 throw new InvalidOperationException("Failed to persist rotated token data.");
             }
 

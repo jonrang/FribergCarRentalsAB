@@ -66,8 +66,6 @@ namespace FribergCarRentalsAPI.Data.Services
             if (rental.Car != null)
             {
                 rental.Car.IsAvailable = true;
-                // Optionally update mileage here if the data was collected at return
-                // rental.Car.Mileage = newMileage;
             }
 
             await context.SaveChangesAsync();
@@ -123,6 +121,8 @@ namespace FribergCarRentalsAPI.Data.Services
                 EndDate = newRental.EndDate,
                 Status = newRental.Status.ToString(),
                 TotalCost = newRental.TotalCost,
+                UserId = userId,
+                UserEmail = string.Empty
             };
 
             return (true, null, rentalView);
@@ -259,9 +259,6 @@ namespace FribergCarRentalsAPI.Data.Services
             }
 
             rental.Status = RentalStatus.Cancelled;
-
-            // Optionally, update the car's IsAvailable status
-            // However, the GetAvailableCarsAsync method already handles this via Status check.
 
             await context.SaveChangesAsync();
             return (true, null);

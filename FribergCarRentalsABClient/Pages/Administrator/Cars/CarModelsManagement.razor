@@ -1,6 +1,7 @@
 ﻿@page "/admin/carmodels"
 @using FribergCarRentalsABClient.Services.Admin
 @using FribergCarRentalsABClient.Services.Cars
+@using Microsoft.AspNetCore.Components.WebAssembly.Hosting
 @attribute [Authorize(Roles = "Administrator")]
 
 @inject IAdminService AdminService
@@ -10,12 +11,11 @@
 
 <PageTitle>Car Model Management</PageTitle>
 
-<h3>🚗 Car Model Management</h3>
+<h3>Car Model Management</h3>
 <p>Manage the list of car makes, models, body styles, and default images.</p>
 
 <hr />
 
-@* --- Add New / Edit Form Area --- *@
 @if (IsEditing || IsAdding)
 {
     <div class="card mb-4 p-3 bg-light">
@@ -28,8 +28,34 @@
                 <div class="col-md-6 mb-3"><label>Name</label><InputText @bind-Value="EditModel.Name" class="form-control" /></div>
                 <div class="col-md-6 mb-3"><label>Manufacturer</label><InputText @bind-Value="EditModel.Manufacturer" class="form-control" /></div>
                 <div class="col-md-6 mb-3"><label>Body Style</label><InputText @bind-Value="EditModel.BodyStyle" class="form-control" /></div>
-                <div class="col-md-6 mb-3"><label>Image File Name</label><InputText @bind-Value="EditModel.ImageFileName" class="form-control" /></div>
+                <div class="col-md-6 mb-3">
+                    <label>Image File Name</label>
+                    @if (IsLoadingImages)
+                    {
+                        <p>Loading images...</p>
+                    }
+                    else
+                    {
+                        <InputSelect @bind-Value="EditModel.ImageFileName" class="form-select">
+                            <option value="">-- Select an Image --</option>
+                            @foreach (var fileName in CarImageFiles)
+                            {
+                                <option value="@fileName">@fileName</option>
+                            }
+                        </InputSelect>
+                    }
+                </div>
             </div>
+
+            @if (!string.IsNullOrWhiteSpace(EditModel.ImageFileName))
+            {
+                <div class="mt-3 mb-3 text-center">
+                    <h5>Image Preview</h5>
+                    <img src="images/cars/@EditModel.ImageFileName"
+                         alt="Preview of selected car image"
+                         style="max-width: 400px; max-height: 250px; object-fit: cover; border: 1px solid #ccc; border-radius: 8px;" />
+                </div>
+            }
 
             <button type="submit" class="btn btn-success me-2">@(IsAdding ? "Create Model" : "Save Changes")</button>
             <button type="button" class="btn btn-secondary" @onclick="ClearSelection">Cancel</button>
@@ -41,7 +67,6 @@ else
     <button class="btn btn-primary mb-3" @onclick="StartAdd">Add New Model</button>
 }
 
-@* --- Status Messages --- *@
 @if (!string.IsNullOrEmpty(SuccessMessage))
 {
     <div class="alert alert-success">@SuccessMessage</div>
@@ -53,7 +78,6 @@ else
 
 <hr />
 
-@* --- Car Model List --- *@
 @if (IsLoading)
 {
     <p>Loading car models...</p>
@@ -96,7 +120,6 @@ else
 
 
 @code {
-    // --- State Variables ---
     private List<CarModel> CarModels = new();
     private CarModel EditModel = new();
     private bool IsLoading = true;
@@ -104,13 +127,15 @@ else
     private bool IsAdding = false;
     private string ErrorMessage = string.Empty;
     private string SuccessMessage = string.Empty;
+    private List<string> CarImageFiles = new();
+    private bool IsLoadingImages = true;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadCarModelsAsync();
+        GetCarImageFileNames();
     }
 
-    // --- Data Loading ---
     private async Task LoadCarModelsAsync()
     {
         IsLoading = true;
@@ -129,10 +154,9 @@ else
         }
     }
 
-    // --- Form Management ---
     private void StartAdd()
     {
-        EditModel = new CarModel(); // Resets to a blank model
+        EditModel = new CarModel();
         IsAdding = true;
         IsEditing = false;
         SuccessMessage = string.Empty;
@@ -141,7 +165,6 @@ else
 
     private void StartEdit(CarModel model)
     {
-        // Creates a deep copy for editing to avoid modifying the list item directly before saving
         EditModel = new CarModel
         {
             CarModelId = model.CarModelId,
@@ -165,7 +188,6 @@ else
         ErrorMessage = string.Empty;
     }
 
-    // --- CRUD Operations ---
     private async Task HandleSubmit()
     {
         ErrorMessage = string.Empty;
@@ -177,20 +199,18 @@ else
         {
             if (IsAdding)
             {
-                // Create a new model
                 success = await carService.AddCarModelAsync(EditModel);
             }
             else if (IsEditing)
             {
-                // Update existing model
                 success = await carService.UpdateCarModelAsync(EditModel.CarModelId, EditModel);
             }
 
             if (success)
             {
                 SuccessMessage = $"Car model '{EditModel.Name}' successfully {action}.";
-                await LoadCarModelsAsync(); // Refresh the list
-                ClearSelection(); // Close the form
+                await LoadCarModelsAsync(); 
+                ClearSelection();
             }
             else
             {
@@ -225,5 +245,11 @@ else
                 ErrorMessage = $"Deletion error: {ex.Message}";
             }
         }
+    }
+    private async Task GetCarImageFileNames()
+    {
+        IsLoadingImages = true;
+        CarImageFiles = await carService.GetCarImageFilenamesAsync();
+        IsLoadingImages = false;
     }
 }

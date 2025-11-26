@@ -6,15 +6,16 @@ namespace FribergCarRentalsABClient.Services.Rental
     public class RentalService : IRentalService
     {
         private readonly ICarRentalsAPIClient apiClient;
-        private readonly ILogger logger;
+        private readonly ILogger<RentalService> logger;
 
-        public RentalService(ICarRentalsAPIClient apiClient, ILogger logger)
+        public RentalService(ICarRentalsAPIClient apiClient, ILogger<RentalService> logger)
         {
             this.apiClient = apiClient;
             this.logger = logger;
         }
         public async Task<bool> CancelRentalAsync(int id)
         {
+            
             try
             {
                 await apiClient.CancelAsync(id);
@@ -56,17 +57,16 @@ namespace FribergCarRentalsABClient.Services.Rental
                     {
                         Success = true,
                         Message = apiResponse.Message ?? "Booking successful.",
-                        RentalDetails = new RentalViewDto 
-                        { 
+                        RentalDetails = new RentalViewDto
+                        {
                             RentalId = apiResponse.Data.RentalId,
                             CarDetails = apiResponse.Data.CarDetails,
                             StartDate = apiResponse.Data.StartDate,
                             EndDate = apiResponse.Data.EndDate,
                             Status = apiResponse.Data.Status,
                             TotalCost = apiResponse.Data.TotalCost,
-                            UserEmail = apiResponse.Data.UserEmail,
-                            UserId = apiResponse.Data.UserId,
-                            AdditionalProperties = apiResponse.Data.AdditionalProperties
+                            UserId = apiResponse.Data?.UserId,
+                            UserEmail = apiResponse.Data?.UserEmail
                         }
                     };
                 }
@@ -81,6 +81,9 @@ namespace FribergCarRentalsABClient.Services.Rental
             {
                 return new RentalCreationResult { Success = false, Message = $"An unexpected server error occurred (Status: {ex.StatusCode})." };
             }
+
+
+
         }
 
         public async Task<List<RentalViewDto>> GetMyRentalsAsync()
@@ -100,6 +103,26 @@ namespace FribergCarRentalsABClient.Services.Rental
             {
                 logger.LogError(ex, "An unexpected error occurred in GetMyRentalsAsync.");
                 return new List<RentalViewDto>();
+            }
+        }
+
+        public async Task<List<UnavailablePeriodDto>> GetUnavailablePeriodsAsync(int carId)
+        {
+            var date = DateOnly.FromDateTime(DateTime.Today);
+            DateTime startDate = DateTime.Today;
+            var endDate = DateTime.Today.AddYears(1);
+            try
+            {
+                var periods = await apiClient.PeriodsAsync(carId, startDate, endDate);
+
+                return periods.ToList();
+
+            }
+            catch (ApiException ex)
+            {
+                logger.LogError($"API Error retrieving unavailable periods for Car {carId}: {ex.StatusCode} - {ex.Response}");
+
+                return new List<UnavailablePeriodDto>();
             }
         }
     }

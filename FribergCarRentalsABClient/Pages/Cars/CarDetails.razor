@@ -47,8 +47,8 @@ else if (Car != null)
                     <h4>Rent This Car</h4>
                     <p>Enter your desired rental dates below.</p>
                     <hr />
-                    
-                    <EditForm Model="@RentalModel" OnValidSubmit="HandleRentSubmit">
+
+                    <EditForm Model="@RentalModel" OnValidSubmit="HandleRentSubmit" Context="editContext">
                         <DataAnnotationsValidator />
                         <ValidationSummary />
 
@@ -87,6 +87,8 @@ else if (Car != null)
     private bool IsLoading = true;
     private string ResultMessage = string.Empty;
     private bool IsSuccess = false;
+    private List<UnavailablePeriodDto> UnavailablePeriods = new();
+    private string AvailabilityMessage = "Checking availability...";
 
     private CreateRentalDto RentalModel = new();
 
@@ -104,6 +106,8 @@ else if (Car != null)
                 RentalModel.StartDate = DateTime.Today.AddDays(1);
                 RentalModel.EndDate = DateTime.Today.AddDays(8);
 
+                UnavailablePeriods = await RentalService.GetUnavailablePeriodsAsync(Car.Id);
+                AvailabilityMessage = $"{Car.Manufacturer} is booked for {UnavailablePeriods.Count} period(s).";
             }
         }
         catch (Exception)
@@ -123,6 +127,12 @@ else if (Car != null)
         {
             IsSuccess = false;
             ResultMessage = "End Date must be after the Start Date.";
+            return;
+        }
+        if (!IsSelectedRangeAvailable())
+        {
+            IsSuccess = false;
+            ResultMessage = "The selected dates overlap with a pre-existing booking.";
             return;
         }
 
@@ -147,5 +157,22 @@ else if (Car != null)
             IsSuccess = false;
             ResultMessage = $"A critical error occurred during booking: {ex.Message}";
         }
+    }
+    private bool IsSelectedRangeAvailable()
+    {
+        DateOnly start = DateOnly.FromDateTime(RentalModel.StartDate.Date);
+        DateOnly end = DateOnly.FromDateTime(RentalModel.EndDate.Date).AddDays(-1);
+
+        foreach (var period in UnavailablePeriods)
+        {
+            DateOnly bookedStart = DateOnly.FromDateTime(period.StartDate.Date);
+            DateOnly bookedEnd = DateOnly.FromDateTime(period.EndDate.Date).AddDays(-1);
+
+            if (start <= bookedEnd && end >= bookedStart)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 }

@@ -72,7 +72,7 @@ namespace FribergCarRentalsAPI.Data.Services
 
             if (carToDelete == null)
             {
-                return (true, null); // Idempotent: it's "deleted" if it's not found
+                return (true, null); // it's "deleted" if it's not found
             }
 
             var activeRentals = await context.Rentals
@@ -215,6 +215,21 @@ namespace FribergCarRentalsAPI.Data.Services
                 BodyStyle = car.Model.BodyStyle,
                 ImageFileName = car.Model.ImageFileName
             };
+        }
+
+        public async Task<List<UnavailablePeriodDto>> GetUnavailablePeriodsAsync(int carId, DateOnly start, DateOnly end)
+        {
+            var rentals = await context.Rentals.Where(r => r.CarId == carId && (r.Status == RentalStatus.Pending || r.Status == RentalStatus.Active)).ToListAsync();
+            var periods = new List<UnavailablePeriodDto>();
+            foreach (var rental in rentals)
+            {
+                periods.Add(new UnavailablePeriodDto
+                {
+                    StartDate = rental.StartDate,
+                    EndDate = rental.EndDate
+                });
+            }
+            return periods;
         }
 
         public async Task<(bool Success, string? Error)> UpdateCarAsync(int id, CarDto carDto)

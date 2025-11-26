@@ -105,7 +105,6 @@ namespace FribergCarRentalsAPI.Controllers
 
             if (rental == null) return NotFound();
 
-            // Enforce ownership unless the user is an administrator
             if (!isAdmin && rental.UserId != userId)
             {
                 return Forbid();

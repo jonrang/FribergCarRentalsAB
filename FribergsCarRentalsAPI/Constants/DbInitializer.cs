@@ -53,6 +53,7 @@ namespace FribergCarRentalsAPI.Constants
                         Email = AdminUserEmail,
                         FirstName = "System",
                         LastName = "Admin",
+                        DriverLicenseNumber = "ABC12345",
                         DateOfBirth = new DateTime(1980, 1, 1),
                         EmailConfirmed = true
                     };
@@ -78,7 +79,6 @@ namespace FribergCarRentalsAPI.Constants
             catch (Exception ex)
             {
                 logger.LogError(ex, "An error occurred while seeding the database.");
-                // Optionally, rethrow the exception if initialization failure should stop the app
             }
         }
     }

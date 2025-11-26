@@ -1,5 +1,240 @@
-﻿<h3>UserProfile</h3>
+﻿@page "/profile"
+@using System.Security.Claims
+@using FribergCarRentalsABClient.Models
+@using FribergCarRentalsABClient.Services.Base
+@using FribergCarRentalsABClient.Services.Users
+@attribute [Authorize]
 
+@inject IUserService AccountService
+@inject NavigationManager NavManager
+
+<PageTitle>My Profile</PageTitle>
+
+<h3>My Account Overview</h3>
+
+@if (IsLoading)
+{
+    <p>Loading profile data...</p>
+}
+else if (Profile == null)
+{
+    <div class="alert alert-danger">Unable to load your profile.</div>
+}
+else
+{
+    <div class="row">
+        
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5>Profile Information</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Email</dt>
+                        <dd class="col-sm-8">@Profile.Email</dd>
+                        
+                        <dt class="col-sm-4">First Name</dt>
+                        <dd class="col-sm-8">@Profile.FirstName</dd>
+                        
+                        <dt class="col-sm-4">Last Name</dt>
+                        <dd class="col-sm-8">@Profile.LastName</dd>
+                        
+                        <dt class="col-sm-4">Phone Number</dt>
+                        <dd class="col-sm-8">@(string.IsNullOrWhiteSpace(Profile.PhoneNumber) ? "N/A" : Profile.PhoneNumber)</dd>
+                        
+                        <dt class="col-sm-4">Date of Birth</dt>
+                        <dd class="col-sm-8">@Profile.DateOfBirth.ToString("yyyy-MM-dd")</dd>
+                        
+                        <dt class="col-sm-4">License No.</dt>
+                        <dd class="col-sm-8">@(string.IsNullOrWhiteSpace(Profile.DriverLicenseNumber) ? "N/A" : Profile.DriverLicenseNumber)</dd>
+                    </dl>
+                    <button class="btn btn-sm btn-outline-primary mt-3" @onclick="() => IsEditingProfile = true">Edit Profile Info</button>
+                    <button class="btn btn-sm btn-outline-secondary mt-3 ms-2" @onclick="() => IsChangingPassword = true">Change Password</button>
+                </div>
+            </div>
+            
+            <button class="btn btn-info w-100" @onclick="() => NavigateToMyRentals()">
+                View My Rentals
+            </button>
+        </div>
+
+        <div class="col-md-6">
+            @if (IsEditingProfile)
+            {
+                <div class="card mb-4">
+                    <div class="card-header bg-warning">
+                        <h5>Edit Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <EditForm Model="@UpdateModel" OnValidSubmit="HandleProfileUpdate">
+                            <DataAnnotationsValidator />
+                            <ValidationSummary />
+
+                            <div class="mb-3">
+                                <label>First Name</label>
+                                <InputText @bind-Value="UpdateModel.FirstName" class="form-control" />
+                            </div>
+                            <div class="mb-3">
+                                <label>Last Name</label>
+                                <InputText @bind-Value="UpdateModel.LastName" class="form-control" />
+                            </div>
+                            <div class="mb-3">
+                                <label>Phone Number</label>
+                                <InputText @bind-Value="UpdateModel.PhoneNumber" class="form-control" />
+                            </div>
+                            
+                            <button type="submit" class="btn btn-success me-2">Save Changes</button>
+                            <button type="button" class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
+                        </EditForm>
+                    </div>
+                </div>
+            }
+
+            @if (IsChangingPassword && !IsEditingProfile)
+            {
+                 <div class="card mb-4">
+                    <div class="card-header bg-danger text-white">
+                        <h5>Change Password</h5>
+                    </div>
+                    <div class="card-body">
+                        <EditForm Model="@PasswordModel" OnValidSubmit="HandlePasswordChange">
+                            <DataAnnotationsValidator />
+                            <ValidationSummary />
+
+                            <div class="mb-3">
+                                <label>Current Password</label>
+                                <InputText @bind-Value="PasswordModel.CurrentPassword" class="form-control" type="password" />
+                            </div>
+                            <div class="mb-3">
+                                <label>New Password</label>
+                                <InputText @bind-Value="PasswordModel.NewPassword" class="form-control" type="password" />
+                            </div>
+                            
+                            <button type="submit" class="btn btn-danger me-2">Change Password</button>
+                            <button type="button" class="btn btn-secondary" @onclick="CancelPasswordChange">Cancel</button>
+                        </EditForm>
+                    </div>
+                </div>
+            }
+            
+            @if (!string.IsNullOrEmpty(ResultMessage))
+            {
+                <div class="alert @(IsSuccess ? "alert-success" : "alert-danger") mt-3">@ResultMessage</div>
+            }
+        </div>
+    </div>
+}
 @code {
+    private CustomerProfileViewDto Profile;
+    private CustomerProfileUpdateDto UpdateModel = new();
+    private ChangePasswordDto PasswordModel = new();
+    
+    private bool IsLoading = true;
+    private bool IsEditingProfile = false;
+    private bool IsChangingPassword = false;
+    
+    private string ResultMessage = string.Empty;
+    private bool IsSuccess = false;
 
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProfileAsync();
+    }
+    
+    private async Task LoadProfileAsync()
+    {
+        IsLoading = true;
+        try
+        {
+            Profile = await AccountService.GetMyProfileAsync();
+            
+            if (Profile != null)
+            {
+                UpdateModel.FirstName = Profile.FirstName;
+                UpdateModel.LastName = Profile.LastName;
+                UpdateModel.PhoneNumber = Profile.PhoneNumber;
+            }
+        }
+        catch (Exception ex)
+        {
+            ResultMessage = $"Failed to load profile: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void CancelEdit()
+    {
+        IsEditingProfile = false;
+
+        UpdateModel.FirstName = Profile.FirstName;
+        UpdateModel.LastName = Profile.LastName;
+        UpdateModel.PhoneNumber = Profile.PhoneNumber;
+        ResultMessage = string.Empty;
+    }
+    
+    private void CancelPasswordChange()
+    {
+        IsChangingPassword = false;
+        PasswordModel = new();
+        ResultMessage = string.Empty;
+    }
+
+    private async Task HandleProfileUpdate()
+    {
+        ResultMessage = string.Empty;
+        IsSuccess = false;
+
+        try
+        {
+            if (await AccountService.UpdateMyProfileAsync(UpdateModel))
+            {
+                IsSuccess = true;
+                ResultMessage = "Profile updated successfully!";
+                IsEditingProfile = false;
+                
+                await LoadProfileAsync(); 
+            }
+            else
+            {
+                ResultMessage = "Failed to update profile. Please check the information and try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ResultMessage = $"Error updating profile: {ex.Message}";
+        }
+    }
+
+    private async Task HandlePasswordChange()
+    {
+        ResultMessage = string.Empty;
+        IsSuccess = false;
+
+        try
+        {
+            if (await AccountService.ChangeMyPasswordAsync(PasswordModel))
+            {
+                IsSuccess = true;
+                ResultMessage = "Password changed successfully!";
+                IsChangingPassword = false;
+                PasswordModel = new();
+            }
+            else
+            {
+                ResultMessage = "Failed to change password. Please verify your current password is correct.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ResultMessage = $"Error changing password: {ex.Message}";
+        }
+    }
+    private void NavigateToMyRentals()
+    {
+        NavManager.NavigateTo($"/myrentals");
+    }
 }
