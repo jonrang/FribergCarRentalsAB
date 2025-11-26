@@ -99,7 +99,7 @@ namespace FribergCarRentalsAPI.Data.Services
                 return (false, "Car model not found");
             }
 
-            var carsCount = await context.CarModels.CountAsync(c => c.CarModelId == id);
+            var carsCount = await context.Cars.CountAsync(c => c.CarModelId == id);
 
             if (carsCount > 0)
             {

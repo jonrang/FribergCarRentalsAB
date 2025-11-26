@@ -1,5 +1,8 @@
-﻿using FribergCarRentalsAPI.Data;
+﻿using System;
+using System.Text.Json;
+using FribergCarRentalsAPI.Data;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace FribergCarRentalsAPI.Constants
 {
@@ -15,6 +18,10 @@ namespace FribergCarRentalsAPI.Constants
             var logger = services.GetRequiredService<ILoggerFactory>().CreateLogger("DbInitializer");
 
             var configuration = services.GetRequiredService<IConfiguration>();
+            var environment = services.GetRequiredService<IHostEnvironment>();
+            var userManager = services.GetRequiredService<UserManager<ApiUser>>();
+            var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+            var context = services.GetRequiredService<CarRentalAPIContext>();
 
             var adminPassword = configuration["SeedSettings:AdminPassword"];
 
@@ -26,8 +33,6 @@ namespace FribergCarRentalsAPI.Constants
 
             try
             {
-                var userManager = services.GetRequiredService<UserManager<ApiUser>>();
-                var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
                 logger.LogInformation("Starting database seeding: Creating roles and initial admin user.");
 
@@ -74,6 +79,110 @@ namespace FribergCarRentalsAPI.Constants
                 else
                 {
                     logger.LogInformation("Admin user already exists. Skipping creation.");
+                }
+                if (environment.IsDevelopment())
+                {
+                    logger.LogInformation("Environment is Development. Starting extensive test data seeding...");
+
+                    if (!context.CarModels.Any() || !context.Cars.Any())
+                    {
+                        // 1. Read JSON file
+                        var seedFilePath = Path.Combine(environment.ContentRootPath, "seeddata.json");
+                        var json = await File.ReadAllTextAsync(seedFilePath);
+                        var seedData = JsonSerializer.Deserialize<SeedData>(json, new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        });
+
+                        if (seedData == null)
+                        {
+                            logger.LogError("Failed to deserialize seeddata.json.");
+                            return;
+                        }
+
+                        // 2. Seed CarModels
+                        context.CarModels.AddRange(seedData.CarModels);
+                        await context.SaveChangesAsync();
+                        logger.LogInformation("Seeded {Count} Car Models.", seedData.CarModels.Count);
+
+                        // 3. Seed Test Users
+                        foreach (var userSeed in seedData.TestUsers)
+                        {
+                            if (await userManager.FindByEmailAsync(userSeed.Email) == null)
+                            {
+                                var user = new ApiUser
+                                {
+                                    UserName = userSeed.Email,
+                                    Email = userSeed.Email,
+                                    FirstName = userSeed.FirstName,
+                                    LastName = userSeed.LastName,
+                                    DateOfBirth = userSeed.DateOfBirth,
+                                    DriverLicenseNumber = userSeed.DriverLicenseNumber,
+                                    PhoneNumber = userSeed.PhoneNumber,
+                                    EmailConfirmed = true
+                                };
+                                var result = await userManager.CreateAsync(user, userSeed.Password);
+                                if (result.Succeeded)
+                                {
+                                    await userManager.AddToRoleAsync(user, ApiRoles.User);
+                                }
+                            }
+                        }
+                        logger.LogInformation("Seeded {Count} Test Users.", seedData.TestUsers.Count);
+
+
+                        // 4. Seed Cars (Requires linking to CarModel ID)
+                        var carModelsMap = context.CarModels.ToDictionary(m => m.Name);
+                        foreach (var carSeed in seedData.Cars)
+                        {
+                            if (context.Cars.Any(c => c.LicensePlate == carSeed.LicensePlate)) continue;
+
+                            if (carModelsMap.TryGetValue(carSeed.ModelName, out var model))
+                            {
+                                context.Cars.Add(new Car
+                                {
+                                    CarModelId = model.CarModelId,
+                                    Make = carSeed.Make,
+                                    Year = carSeed.Year,
+                                    LicensePlate = carSeed.LicensePlate,
+                                    RatePerDay = carSeed.RatePerDay,
+                                    Mileage = carSeed.Mileage,
+                                    IsAvailable = true
+                                });
+                            }
+                        }
+                        await context.SaveChangesAsync();
+                        logger.LogInformation("Seeded {Count} Cars.", seedData.Cars.Count);
+
+
+                        // 5. Seed Rentals (Requires linking to User ID and Car ID)
+                        var testUser = await userManager.FindByEmailAsync(seedData.Rentals.First().UserEmail);
+                        var rentalCar = await context.Cars.FirstOrDefaultAsync(c => c.LicensePlate == seedData.Rentals.First().LicensePlate);
+
+                        if (testUser != null && rentalCar != null)
+                        {
+                            var rentalSeed = seedData.Rentals.First();
+                            var days = (rentalSeed.EndDate.ToDateTime(TimeOnly.MinValue) - rentalSeed.StartDate.ToDateTime(TimeOnly.MinValue)).Days;
+
+                            context.Rentals.Add(new Rental
+                            {
+                                UserId = testUser.Id,
+                                CarId = rentalCar.Id,
+                                StartDate = rentalSeed.StartDate,
+                                EndDate = rentalSeed.EndDate,
+                                DaysBooked = days,
+                                RateAtTimeOfRental = rentalSeed.RateAtTimeOfRental,
+                                TotalCost = rentalSeed.RateAtTimeOfRental * days,
+                                Status = rentalSeed.Status,
+                            });
+                            await context.SaveChangesAsync();
+                            logger.LogInformation("Seeded 1 Test Rental.");
+                        }
+                    }
+                    else
+                    {
+                        logger.LogInformation("Test data already exists. Skipping data seeding.");
+                    }
                 }
             }
             catch (Exception ex)
