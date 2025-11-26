@@ -1,4 +1,8 @@
-﻿namespace FribergCarRentalsAPI.Data
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+
+namespace FribergCarRentalsAPI.Data
 {
     public class Car
     {

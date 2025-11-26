@@ -1,7 +1,11 @@
-﻿using FribergCarRentalsAPI.Constants;
+﻿using System.Security.Claims;
+using FribergCarRentalsAPI.Constants;
 using FribergCarRentalsAPI.Data.Services;
 using FribergCarRentalsAPI.Dto;
 using FribergCarRentalsAPI.Dto.Rentals;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FribergCarRentalsAPI.Controllers
 {
@@ -41,7 +45,7 @@ namespace FribergCarRentalsAPI.Controllers
             if (!isOfAge || !hasLicense)
             {
                 return BadRequest(new Response<RentalViewDto>
-                {
+                { 
                     Success = false,
                     Message = "User must be of age and have a valid driver's license on file to book.",
                     Data = null
@@ -84,7 +88,7 @@ namespace FribergCarRentalsAPI.Controllers
                 return BadRequest(new { Message = error });
             }
             return Ok(); // think standard is actually no content here
-            return NoContent();
+            return NoContent(); 
         }
 
         // GET /api/rentals/{id} 

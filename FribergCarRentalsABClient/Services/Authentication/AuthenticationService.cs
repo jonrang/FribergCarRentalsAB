@@ -1,5 +1,8 @@
-﻿using FribergCarRentalsABClient.Providers;
+﻿using Blazored.LocalStorage;
+using FribergCarRentalsABClient.Models;
+using FribergCarRentalsABClient.Providers;
 using FribergCarRentalsABClient.Services.Base;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace FribergCarRentalsABClient.Services.Authentication
 {
@@ -63,7 +66,7 @@ namespace FribergCarRentalsABClient.Services.Authentication
             try
             {
                 var response = await apiClient.RegisterAsync(registerModel);
-
+                
                 return response;
             }
             catch (ApiException ex)
@@ -112,7 +115,7 @@ namespace FribergCarRentalsABClient.Services.Authentication
                 var accessToken = await localStorage.GetItemAsStringAsync("accessToken");
                 var refreshToken = await localStorage.GetItemAsStringAsync("refreshToken");
 
-                if (string.IsNullOrEmpty(refreshToken) || string.IsNullOrEmpty(accessToken))
+                if (string.IsNullOrEmpty(refreshToken) || string.IsNullOrEmpty(accessToken)) 
                 {
                     await Logout();
                     return null;

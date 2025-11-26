@@ -1,6 +1,10 @@
 ﻿using FribergCarRentalsAPI.Constants;
 using FribergCarRentalsAPI.Data.Services;
 using FribergCarRentalsAPI.Dto.Users;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace FribergCarRentalsAPI.Controllers
 {
@@ -59,13 +63,13 @@ namespace FribergCarRentalsAPI.Controllers
                 var modelStateDictionary = new ModelStateDictionary();
                 foreach (var errorPair in errors)
                 {
-                    var key = errorPair.Key;
+                     var key = errorPair.Key;
 
-                    var errorMessages = errorPair.Value;
+                     var errorMessages = errorPair.Value;
 
                     foreach (var errorMessage in errorMessages)
                     {
-                        modelStateDictionary.AddModelError(key, errorMessage);
+                         modelStateDictionary.AddModelError(key, errorMessage);
                     }
                 }
                 return ValidationProblem(modelStateDictionary);

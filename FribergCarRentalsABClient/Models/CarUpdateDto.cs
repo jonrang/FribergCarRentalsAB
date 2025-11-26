@@ -1,4 +1,6 @@
-﻿namespace FribergCarRentalsABClient.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace FribergCarRentalsABClient.Models
 {
     public class CarUpdateDto
     {

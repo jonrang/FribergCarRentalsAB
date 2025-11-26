@@ -1,5 +1,13 @@
-﻿using FribergCarRentalsAPI.Dto;
+﻿using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using FribergCarRentalsAPI.Constants;
+using FribergCarRentalsAPI.Dto;
 using FribergCarRentalsAPI.Dto.Users;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 
 namespace FribergCarRentalsAPI.Data.Services
 {
@@ -109,7 +117,7 @@ namespace FribergCarRentalsAPI.Data.Services
             };
         }
 
-        public async Task<(bool Success, IDictionary<string, string[]> Errors, string? userID, string? token)> RegisterUserAsync(RegisterUserDto userDto, string defaultRole)
+        public async Task<(bool Success, IDictionary<string, string[]> Errors,string? userID, string? token)> RegisterUserAsync(RegisterUserDto userDto, string defaultRole)
         {
             var existingUser = await userManager.FindByEmailAsync(userDto.Email);
             if (existingUser != null)
@@ -126,7 +134,7 @@ namespace FribergCarRentalsAPI.Data.Services
                 Email = userDto.Email,
                 FirstName = userDto.FirstName,
                 LastName = userDto.LastName,
-                DateOfBirth = userDto.DateOfBirth,
+                DateOfBirth = userDto.DateOfBirth, 
                 DriverLicenseNumber = userDto.DriverLicenseNumber,
                 PhoneNumber = userDto.PhoneNumber,
             };
@@ -153,7 +161,7 @@ namespace FribergCarRentalsAPI.Data.Services
                 { "RoleAssignment", new[] { "User was created but failed to assign the default role." } }
             }, null, null);
             }
-            var token = await GenerateEmailConfirmationTokenAsync(user.Id);
+            var token =  await GenerateEmailConfirmationTokenAsync(user.Id);
 
             return (true, new Dictionary<string, string[]>(), user.Id, token);
         }

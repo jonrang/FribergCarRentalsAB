@@ -1,11 +1,13 @@
-﻿namespace FribergCarRentalsAPI.Dto
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace FribergCarRentalsAPI.Dto
 {
     public class RefreshTokenDto
     {
         [Required]
-        public string AccessToken { get; set; }
+        public  string AccessToken { get; set; }
 
         [Required]
-        public string RefreshToken { get; set; }
+        public  string RefreshToken { get; set; }
     }
 }

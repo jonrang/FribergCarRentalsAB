@@ -1,4 +1,7 @@
-﻿using FribergCarRentalsAPI.Dto.Rentals;
+﻿using System.Security.Claims;
+using FribergCarRentalsAPI.Dto.Rentals;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace FribergCarRentalsAPI.Data.Services
 {
@@ -72,7 +75,7 @@ namespace FribergCarRentalsAPI.Data.Services
 
         public async Task<(bool Success, string? Error, RentalViewDto? Rental)> CreateRentalAsync(CreateRentalDto rentalDto, string userId)
         {
-
+            
 
             var car = await context.Cars.Include(c => c.Model).FirstOrDefaultAsync(c => c.Id == rentalDto.CarId);
             if (car == null || !car.IsAvailable)
@@ -155,7 +158,7 @@ namespace FribergCarRentalsAPI.Data.Services
         public async Task<IEnumerable<RentalViewDto>> GetAllRentalsAsync()
         {
             var rentals = await context.Rentals
-                .Include(r => r.Car!)
+                .Include (r => r.Car!)
                     .ThenInclude(c => c.Model)
                 .Include(r => r.User)
                 .OrderByDescending(r => r.StartDate)
@@ -194,7 +197,7 @@ namespace FribergCarRentalsAPI.Data.Services
                     UserEmail = r.User.Email!
                 })
                 .FirstOrDefaultAsync();
-
+            
             return rental;
         }
 

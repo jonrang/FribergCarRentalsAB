@@ -1,4 +1,9 @@
-﻿using FribergCarRentalsABClient.Services.Authentication;
+﻿using System.Net.Http.Headers;
+using System.Text;
+using Blazored.LocalStorage;
+using FribergCarRentalsABClient.Providers;
+using FribergCarRentalsABClient.Services.Authentication;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FribergCarRentalsABClient.Services.Base
 {
@@ -21,9 +26,9 @@ namespace FribergCarRentalsABClient.Services.Base
             return Task.CompletedTask;
         }
 
-        protected async Task PrepareRequestAsync(HttpClient client,
-            HttpRequestMessage request,
-            string url,
+        protected async Task PrepareRequestAsync(HttpClient client, 
+            HttpRequestMessage request, 
+            string url, 
             CancellationToken cancellationToken)
         {
             var token = await localStorage.GetItemAsStringAsync("accessToken");

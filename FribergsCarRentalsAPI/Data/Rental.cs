@@ -1,4 +1,7 @@
-﻿namespace FribergCarRentalsAPI.Data
+﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+
+namespace FribergCarRentalsAPI.Data
 {
     public enum RentalStatus
     {

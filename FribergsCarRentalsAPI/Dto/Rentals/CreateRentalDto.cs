@@ -1,4 +1,6 @@
-﻿namespace FribergCarRentalsAPI.Dto.Rentals
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace FribergCarRentalsAPI.Dto.Rentals
 {
     public class CreateRentalDto
     {

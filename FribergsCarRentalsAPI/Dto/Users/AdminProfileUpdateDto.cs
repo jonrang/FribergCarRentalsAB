@@ -1,4 +1,6 @@
-﻿namespace FribergCarRentalsAPI.Dto.Users
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace FribergCarRentalsAPI.Dto.Users
 {
     public class AdminProfileUpdateDto
     {

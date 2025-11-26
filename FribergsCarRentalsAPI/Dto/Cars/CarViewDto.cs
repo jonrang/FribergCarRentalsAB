@@ -5,7 +5,7 @@
         public int CarId { get; set; }
         public int CarModelId { get; set; }
         public string LicensePlate { get; set; }
-        public string LicensePlateSnippet { get; set; }
+        public string LicensePlateSnippet { get; set; } 
         public int Year { get; set; }
         public decimal RatePerDay { get; set; }
         public string ModelName { get; set; }

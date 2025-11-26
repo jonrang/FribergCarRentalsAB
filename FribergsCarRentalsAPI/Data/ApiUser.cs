@@ -1,4 +1,6 @@
-﻿namespace FribergCarRentalsAPI.Data
+﻿using Microsoft.AspNetCore.Identity;
+
+namespace FribergCarRentalsAPI.Data
 {
     public class ApiUser : IdentityUser
     {

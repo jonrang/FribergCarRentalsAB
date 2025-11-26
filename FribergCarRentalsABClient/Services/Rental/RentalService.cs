@@ -15,7 +15,7 @@ namespace FribergCarRentalsABClient.Services.Rental
         }
         public async Task<bool> CancelRentalAsync(int id)
         {
-
+            
             try
             {
                 await apiClient.CancelAsync(id);
