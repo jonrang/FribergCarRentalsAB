@@ -1,0 +1,69 @@
+﻿{
+    "CarModels": [
+        {
+            "Name": "Focus",
+            "Manufacturer": "Ford",
+            "BodyStyle": "Hatchback",
+            "ImageFileName": "Blue Car.jpg"
+        },
+        {
+            "Name": "Model 3",
+            "Manufacturer": "Tesla",
+            "BodyStyle": "Sedan",
+            "ImageFileName": "Black Car.jpg"
+        },
+        {
+            "Name": "F80",
+            "Manufacturer": "Ferrari",
+            "BodyStyle": "2-door coupé",
+            "ImageFileName": "Red Car.jpg"
+        }
+    ],
+    "Cars": [
+        {
+            "ModelName": "Focus",
+            "Make": "Ford",
+            "Year": 2020,
+            "LicensePlate": "ABC 123",
+            "RatePerDay": 350.00,
+            "Mileage": 45000
+        },
+        {
+            "ModelName": "F80",
+            "Make": "Ferrari",
+            "Year": 2024,
+            "LicensePlate": "XXX 666",
+            "RatePerDay": 1500.00,
+            "Mileage": 10000
+        },
+        {
+            "ModelName": "Model 3",
+            "Make": "Tesla",
+            "Year": 2022,
+            "LicensePlate": "TES 001",
+            "RatePerDay": 650.00,
+            "Mileage": 15000
+        }
+    ],
+    "TestUsers": [
+        {
+            "Email": "testuser@example.com",
+            "Password": "Password123!",
+            "FirstName": "Jane",
+            "LastName": "Doe",
+            "DateOfBirth": "1995-05-15",
+            "DriverLicenseNumber": "DJK9876",
+            "PhoneNumber": "0701234567"
+        }
+    ],
+    "Rentals": [
+        {
+            "UserEmail": "testuser@example.com",
+            "LicensePlate": "ABC 123",
+            "StartDate": "2025-12-01",
+            "EndDate": "2025-12-05",
+            "Status": "0",
+            "RateAtTimeOfRental": 350.00
+        }
+    ]
+}
