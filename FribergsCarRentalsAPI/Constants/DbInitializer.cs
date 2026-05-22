@@ -24,6 +24,10 @@ namespace FribergCarRentalsAPI.Constants
             var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
             var context = services.GetRequiredService<CarRentalAPIContext>();
 
+            logger.LogInformation("Applying pending EF Core migrations...");
+            await context.Database.MigrateAsync();
+            logger.LogInformation("Migrations applied successfully.");
+
             var adminPassword = configuration["SeedSettings:AdminPassword"];
 
             if (string.IsNullOrWhiteSpace(adminPassword))
@@ -81,9 +85,9 @@ namespace FribergCarRentalsAPI.Constants
                 {
                     logger.LogInformation("Admin user already exists. Skipping creation.");
                 }
-                if (environment.IsDevelopment())
+                if (configuration.GetValue<bool>("SeedSettings:SeedTestData"))
                 {
-                    logger.LogInformation("Environment is Development. Starting extensive test data seeding...");
+                    logger.LogInformation("SeedTestData is enabled. Starting test data seeding...");
 
                     if (!context.CarModels.Any() || !context.Cars.Any())
                     {
