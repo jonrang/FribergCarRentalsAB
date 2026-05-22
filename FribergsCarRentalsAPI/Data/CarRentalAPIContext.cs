@@ -19,6 +19,18 @@ namespace FribergCarRentalsAPI.Data
         {
             base.OnModelCreating(builder);
 
+            builder.Entity<Car>(entity =>
+            {
+                entity.Property(e => e.RatePerDay).HasPrecision(18, 2);
+            });
+
+            builder.Entity<Rental>(entity =>
+            {
+                entity.Property(e => e.RateAtTimeOfRental).HasPrecision(18, 2);
+                entity.Property(e => e.Fees).HasPrecision(18, 2);
+                entity.Property(e => e.TotalCost).HasPrecision(18, 2);
+            });
+
             builder.Entity<IdentityRole>().HasData(
                 new IdentityRole
                 {
