@@ -1,0 +1,52 @@
+name: Build and Deploy to Azure Container Apps
+
+on:
+  push:
+    branches: [AzureWebVersion]
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '9.0'
+  CONTAINER_APP_NAME: 'friberg-car-rentals-api'
+  RESOURCE_GROUP: 'rg-friberg-car-rentals'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore FribergsCarRentalsAPI/FribergCarRentalsAPI.csproj
+
+      - name: Build
+        run: dotnet build FribergsCarRentalsAPI/FribergCarRentalsAPI.csproj -c Release --no-restore
+
+      - name: Publish
+        run: dotnet publish FribergsCarRentalsAPI/FribergCarRentalsAPI.csproj -c Release -o publish --no-restore
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Build and push Docker image
+        run: |
+          az acr build \
+            --registry ${{ secrets.ACR_NAME }} \
+            --image ${{ env.CONTAINER_APP_NAME }}:${{ github.sha }} \
+            --image ${{ env.CONTAINER_APP_NAME }}:latest \
+            .
+
+      - name: Deploy to Azure Container Apps
+        run: |
+          az containerapp update \
+            --name ${{ env.CONTAINER_APP_NAME }} \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --image ${{ secrets.ACR_NAME }}.azurecr.io/${{ env.CONTAINER_APP_NAME }}:${{ github.sha }}

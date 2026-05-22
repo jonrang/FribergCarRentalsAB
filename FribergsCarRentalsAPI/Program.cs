@@ -6,6 +6,7 @@ using FribergCarRentalsAPI.Constants;
 using FribergCarRentalsAPI.Data;
 using FribergCarRentalsAPI.Data.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -87,6 +88,11 @@ namespace FribergCarRentalsAPI
 
             var app = builder.Build();
 
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
+
             await DbInitializer.SeedData(app);
 
             // Configure the HTTP request pipeline.
@@ -101,6 +107,8 @@ namespace FribergCarRentalsAPI
 
             app.UseHttpsRedirection();
 
+            app.UseStaticFiles();
+
             app.UseCors("AllowAll");
 
             app.UseAuthentication();
@@ -108,6 +116,7 @@ namespace FribergCarRentalsAPI
 
 
             app.MapControllers();
+            app.MapFallbackToFile("index.html");
 
             app.Run();
         }
