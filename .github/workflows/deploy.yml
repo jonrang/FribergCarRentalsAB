@@ -42,6 +42,7 @@ jobs:
             --registry ${{ secrets.ACR_NAME }} \
             --image ${{ env.CONTAINER_APP_NAME }}:${{ github.sha }} \
             --image ${{ env.CONTAINER_APP_NAME }}:latest \
+            --file FribergsCarRentalsAPI/Dockerfile \
             .
 
       - name: Deploy to Azure Container Apps
