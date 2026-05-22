@@ -22,9 +22,20 @@ namespace FribergCarRentalsAPI
 
             // Add services to the container.
 
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                connectionString = builder.Configuration["SQL_CONNECTION_STRING"];
+            }
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                Console.Error.WriteLine("FATAL: No connection string found. Tried: ConnectionStrings:DefaultConnection, SQL_CONNECTION_STRING");
+                throw new InvalidOperationException("Connection string is not configured.");
+            }
 
             builder.Services.AddDbContext<CarRentalAPIContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(connectionString));
 
             builder.Services.AddIdentityCore<ApiUser>(options =>
             {
