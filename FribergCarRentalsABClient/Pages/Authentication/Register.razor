@@ -65,7 +65,7 @@
         <InputText class="form-control" @bind-Value="RegistrationModel.Password" type="password" />
         <ValidationMessage For="@(() => RegistrationModel.Password)" />
         @DisplayError("Password")
-        <small class="form-text text-muted">Must be at least 6 characters long.</small>
+        <small class="form-text text-muted">Must be at least 8 characters long with an uppercase letter, lowercase letter, and a digit.</small>
     </div>
 
     <button type="submit" class="btn btn-lg btn-success w-100">Register Account</button>
@@ -148,7 +148,10 @@
         else
         {
             ErrorMessage = result.Message;
-
+            if (result.ValidationErrors != null)
+            {
+                ValidationErrors = result.ValidationErrors.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToArray());
+            }
         }
     }
 

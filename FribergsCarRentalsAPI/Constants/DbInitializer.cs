@@ -29,10 +29,14 @@ namespace FribergCarRentalsAPI.Constants
             logger.LogInformation("Migrations applied successfully.");
 
             var adminPassword = configuration["SeedSettings:AdminPassword"];
+            if (string.IsNullOrWhiteSpace(adminPassword))
+            {
+                adminPassword = configuration["ADMIN_PASSWORD"];
+            }
 
             if (string.IsNullOrWhiteSpace(adminPassword))
             {
-                logger.LogError("Admin password not found in configuration/secrets. Cannot seed admin user.");
+                logger.LogError("Admin password not found in configuration/secrets. Cannot seed admin user. Tried: SeedSettings:AdminPassword, ADMIN_PASSWORD");
                 return;
             }
 
